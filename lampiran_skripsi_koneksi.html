@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lampiran Proposal - koneksi.php</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 40px;
+            max-width: 800px; /* Ukuran kertas A4 standar */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h3 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+        .desc {
+            font-size: 12pt;
+            margin-bottom: 2px;
+            line-height: 1.5;
+        }
+        .code-container {
+            background-color: #f1f1f1;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+        }
+        pre {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 10pt;
+            line-height: 1.4;
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        @media print {
+            body { padding: 0; max-width: 100%; }
+            .code-container { border: none; background-color: #f1f1f1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+    <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 14pt;">2. Koneksi Database MySQL</h3>
+        <div class="desc">File Source Code: <code>config/koneksi.php</code></div>
+        <div class="desc">Fungsi Inti: Menginisialisasi koneksi antara aplikasi web dengan server database MySQL dan menyimpan fungsi global (seperti format tanggal bahasa Indonesia).</div>
+    </div>
+
+    <div class="code-container">
+<pre>
+&lt;?php
+// Konfigurasi akses database
+$host = "localhost"; // Alamat server database (localhost)
+$user = "root";      // Nama pengguna database (default XAMPP adalah root)
+$pass = "";          // Kata sandi database (default XAMPP kosong)
+$db   = "db_bk7";    // Nama database yang ingin dihubungkan
+
+// Menghubungkan skrip PHP ke database server MySQL
+$koneksi = mysqli_connect($host, $user, $pass, $db);
+
+// Cek status koneksi, jika gagal maka tampilkan pesan error dan hentikan program
+if (!$koneksi) {
+    die("Koneksi gagal: " . mysqli_connect_error());
+}
+
+// Cek apakah fungsi tgl_indo belum pernah dibuat sebelumnya untuk mencegah error bentrok fungsi
+if (!function_exists('tgl_indo')) {
+    // Fungsi untuk mengubah format tanggal database (YYYY-MM-DD) menjadi format penulisan Indonesia
+    function tgl_indo($tanggal) {
+        // Daftar nama bulan dalam Bahasa Indonesia, diindeks dari 1 (Januari) sampai 12 (Desember)
+        $bulan = array (
+            1 =&gt;   'Januari',
+            'Februari',
+            'Maret',
+            'April',
+            'Mei',
+            'Juni',
+            'Juli',
+            'Agustus',
+            'September',
+            'Oktober',
+            'November',
+            'Desember'
+        );
+        // Memecah format tanggal Tahun-Bulan-Tanggal berdasarkan karakter pemisah strip (-)
+        $pecahkan = explode('-', date('Y-m-d', strtotime($tanggal)));
+        
+        // Menyusun kembali tanggal dengan format: Tanggal Nama_Bulan Tahun (Contoh: 13 Juli 2026)
+        return $pecahkan[2] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[0];
+    }
+}
+?&gt;
+</pre>
+    </div>
+
+</body>
+</html>

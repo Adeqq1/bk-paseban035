@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lampiran Proposal - proses_login.php</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 40px;
+            max-width: 800px; /* Ukuran kertas A4 standar */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h3 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+        .desc {
+            font-size: 12pt;
+            margin-bottom: 2px;
+            line-height: 1.5;
+        }
+        .code-container {
+            background-color: #f1f1f1;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+        }
+        pre {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 10pt;
+            line-height: 1.4;
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        @media print {
+            body { padding: 0; max-width: 100%; }
+            .code-container { border: none; background-color: #f1f1f1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+    <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 14pt;">3. Logika Pemrosesan Login & Session</h3>
+        <div class="desc">File Source Code: <code>proses_login.php</code></div>
+        <div class="desc">Fungsi Inti: Menangani penerimaan data kredensial dari form login, memvalidasi dan memverifikasi kecocokan password hash dengan data di database, menyimpan sesi (session) pengguna aktif, dan melakukan <i>routing</i> halaman berdasarkan hak akses (role).</div>
+    </div>
+
+    <div class="code-container">
+<pre>
+&lt;?php
+// 1. Memulai session PHP untuk menyimpan status login pengguna secara persisten di server
+session_start();
+
+// 2. Mengimpor file koneksi database agar dapat melakukan kueri ke server MySQL
+require_once 'config/koneksi.php';
+
+/** @var mysqli $koneksi */
+
+// 3. Mengambil data username dan password dari input form login (metode POST)
+// Menggunakan mysqli_real_escape_string untuk menyaring karakter input agar terhindar dari SQL Injection
+$username = mysqli_real_escape_string($koneksi, $_POST['username']);
+$password = $_POST['password'];
+
+// 4. Proses pencarian data ke database MySQL untuk memeriksa apakah username terdaftar
+$query = mysqli_query($koneksi, "
+    SELECT u.*, s.status as status_siswa 
+    FROM user u 
+    LEFT JOIN siswa s ON u.id = s.user_id 
+    WHERE u.username='$username'
+");
+
+// mysqli_fetch_assoc() mengubah hasil pencarian database menjadi bentuk data Array di PHP
+$user = mysqli_fetch_assoc($query);
+
+// 5. Cek apakah akun dengan username tersebut ditemukan di database
+if ($user) {
+    // 6. Verifikasi password teks biasa yang diinput dengan password hash (terenkripsi) di database
+    if (password_verify($password, $user['password'])) {
+        
+        // 7. Validasi aturan sistem: Jika role adalah siswa dan status siswanya alumni, maka ditolak
+        if ($user['role'] == 'siswa' &amp;&amp; $user['status_siswa'] == 'alumni') {
+            header("Location: index.php?pesan=alumni");
+            exit(); 
+        }
+
+        // 8. Menyimpan informasi pengguna ke dalam Sesi (Session) setelah login sukses
+        $_SESSION['id'] = $user['id'];
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['foto'] = $user['foto'] ?? null;
+
+        // Simpan nama_lengkap di session agar selalu tampil nama bukannya NIP/username
+        if ($user['role'] == 'guru_bk' || $user['role'] == 'wali_kelas') {
+            $q_g = mysqli_query($koneksi, "SELECT nama_lengkap FROM guru WHERE user_id = '{$user['id']}'");
+            if ($d_g = mysqli_fetch_assoc($q_g)) {
+                $_SESSION['nama_lengkap'] = $d_g['nama_lengkap'];
+            }
+        } elseif ($user['role'] == 'siswa') {
+            $q_s = mysqli_query($koneksi, "SELECT nama_lengkap FROM siswa WHERE user_id = '{$user['id']}'");
+            if ($d_s = mysqli_fetch_assoc($q_s)) {
+                $_SESSION['nama_lengkap'] = $d_s['nama_lengkap'];
+            }
+        }
+
+        // 9. Mengarahkan halaman dashboard pengguna berdasarkan Hak Akses (Role) masing-masing
+        if ($user['role'] == 'admin') {
+            header("Location: admin/index.php");
+        } elseif ($user['role'] == 'guru_bk') {
+            header("Location: guru_bk/index.php");
+        } elseif ($user['role'] == 'wali_kelas') {
+            header("Location: wali_kelas/index.php");
+        } elseif ($user['role'] == 'siswa') {
+            header("Location: siswa/index.php");
+        }
+    } else {
+        // Jika password tidak cocok/salah, arahkan kembali ke form login
+        header("Location: index.php?pesan=gagal");
+    }
+} else {
+    // Jika username tidak ditemukan di database, arahkan kembali ke form login
+    header("Location: index.php?pesan=gagal");
+}
+?&gt;
+</pre>
+    </div>
+
+</body>
+</html>

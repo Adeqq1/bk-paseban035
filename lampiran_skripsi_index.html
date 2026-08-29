@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lampiran Proposal - index.php</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            background-color: #ffffff;
+            color: #000000;
+            margin: 0;
+            padding: 40px;
+            max-width: 800px; /* Ukuran kertas A4 standar */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        h3 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+            margin-top: 0;
+        }
+        .desc {
+            font-size: 12pt;
+            margin-bottom: 2px;
+            line-height: 1.5;
+        }
+        .code-container {
+            background-color: #f1f1f1;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #ddd;
+        }
+        pre {
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 10pt;
+            line-height: 1.4;
+            margin: 0;
+            white-space: pre-wrap; /* Agar teks panjang turun ke bawah */
+            word-wrap: break-word;
+        }
+        @media print {
+            body { padding: 0; max-width: 100%; }
+            .code-container { border: none; background-color: #f1f1f1 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+    <h3>Lampiran Source Code</h3>
+    
+    <div style="margin-bottom: 20px;">
+        <h3 style="font-size: 14pt;">1. Halaman Login & Autentikasi</h3>
+        <div class="desc">File Source Code: <code>index.php</code></div>
+        <div class="desc">Fungsi Inti: Halaman utama (landing page) untuk autentikasi masuk ke sistem. Pengguna yang sudah login akan otomatis dialihkan ke dashboard sesuai dengan hak akses (role).</div>
+    </div>
+
+    <div class="code-container">
+<pre>
+&lt;?php
+/**
+ * ====================================================================================
+ * HALAMAN UTAMA LOGIN - SISTEM INFORMASI BIMBINGAN KONSELING (SI BK7)
+ * SMAN 7 BUNGO
+ * ====================================================================================
+ * Halaman ini merupakan gerbang utama (landing page) untuk autentikasi masuk ke sistem.
+ * Pengguna yang sudah login akan otomatis dialihkan ke dashboard sesuai dengan hak akses (role) masing-masing.
+ */
+
+// 1. Memulai atau melanjutkan sesi pengguna (Session Handling)
+session_start();
+
+// 2. OTO-REDIRECT SECURITY CHECK:
+// Pengecekan apakah pengguna sudah memiliki sesi login aktif di sistem.
+// Jika sesi role sudah ada, sistem akan langsung mengarahkan pengguna ke halaman dashboard yang sesuai.
+if (isset($_SESSION['role'])) {
+    if ($_SESSION['role'] == 'admin') {
+        header("Location: admin");       // Redirect ke Dashboard Admin
+        exit();
+    } elseif ($_SESSION['role'] == 'guru_bk') {
+        header("Location: guru_bk/index.php");     // Redirect ke Dashboard Guru BK
+        exit();
+    } elseif ($_SESSION['role'] == 'wali_kelas') {
+        header("Location: wali_kelas/index.php");   // Redirect ke Dashboard Wali Kelas
+        exit();
+    } elseif ($_SESSION['role'] == 'siswa') {
+        header("Location: siswa/index.php");        // Redirect ke Dashboard Siswa
+        exit();
+    }
+}
+?&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="id"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;Login | SI BK7 SMAN 7 Bungo&lt;/title&gt;
+    
+    &lt;!-- Library Ikon FontAwesome versi 6.4.0 --&gt;
+    &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"&gt;
+    
+    &lt;!-- Google Font Modern: Plus Jakarta Sans --&gt;
+    &lt;link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"&gt;
+    
+    &lt;style&gt;
+        /* (CSS disembunyikan di lampiran ini agar tidak terlalu panjang, fokus pada struktur PHP/HTML) */
+        /* ... */
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="login-card"&gt;
+        
+        &lt;div style="margin-bottom: 1.25rem;"&gt;
+            &lt;img src="guru_bk/images/logo_sma.png?v=2" alt="Logo SMAN 7 Bungo" style="height: 80px; width: auto;"&gt;
+        &lt;/div&gt;
+        
+        &lt;h2&gt;SI BK7&lt;/h2&gt;
+        &lt;p&gt;Sistem Informasi Bimbingan Konseling&lt;/p&gt;
+        
+        &lt;?php if (isset($_GET['pesan']) &amp;&amp; $_GET['pesan'] == 'gagal'): ?&gt;
+            &lt;div class="alert"&gt;
+                &lt;i class="fas fa-exclamation-circle"&gt;&lt;/i&gt;
+                Username atau Password salah!
+            &lt;/div&gt;
+        &lt;?php elseif (isset($_GET['pesan']) &amp;&amp; $_GET['pesan'] == 'alumni'): ?&gt;
+            &lt;div class="alert" style="background: rgba(245,158,11,0.06); color: #d97706;"&gt;
+                &lt;i class="fas fa-exclamation-triangle"&gt;&lt;/i&gt;
+                Akun Anda sudah alumni / tidak aktif!
+            &lt;/div&gt;
+        &lt;?php endif; ?&gt;
+
+        &lt;form action="proses_login.php" method="POST"&gt;
+            &lt;div class="form-group"&gt;
+                &lt;label&gt;Username&lt;/label&gt;
+                &lt;div class="input-group"&gt;
+                    &lt;i class="fas fa-user input-icon"&gt;&lt;/i&gt;
+                    &lt;input type="text" name="username" class="form-control" placeholder="Masukkan username" required&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+            
+            &lt;div class="form-group"&gt;
+                &lt;label&gt;Password&lt;/label&gt;
+                &lt;div class="input-group"&gt;
+                    &lt;i class="fas fa-lock input-icon"&gt;&lt;/i&gt;
+                    &lt;input type="password" name="password" id="password" class="form-control" placeholder="Masukkan password" required&gt;
+                    &lt;i class="fas fa-eye input-toggle" id="togglePassword"&gt;&lt;/i&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+
+            &lt;button type="submit" class="btn-login"&gt;
+                &lt;i class="fas fa-sign-in-alt"&gt;&lt;/i&gt; Masuk ke Dashboard
+            &lt;/button&gt;
+        &lt;/form&gt;
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+    </div>
+
+</body>
+</html>
