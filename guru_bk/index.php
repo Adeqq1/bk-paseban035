@@ -51,7 +51,7 @@ $total_bimbingan = mysqli_fetch_assoc($query_total_bimbingan)['total'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Guru BK | SI BK7</title>
+    <title>Dashboard Guru BK | BK SMA 07 Bungo</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -63,7 +63,7 @@ $total_bimbingan = mysqli_fetch_assoc($query_total_bimbingan)['total'];
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Guru BK Panel</p>
         </div>
         <ul class="sidebar-menu">
@@ -120,7 +120,7 @@ $total_bimbingan = mysqli_fetch_assoc($query_total_bimbingan)['total'];
                             <span style="color: white; font-weight: 700;">Konselor Aktif</span>
                         </div>
                     </div>
-                    <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 0.925rem; line-height: 1.5;">Selamat datang di portal Bimbingan &amp; Konseling SMAN 7 Bungo. Kelola layanan konseling, pantau kedisiplinan, serta fasilitasi perkembangan potensi peserta didik secara optimal.</p>
+                    <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 0.925rem; line-height: 1.5;">Selamat datang di portal BK SMA 07 Bungo. Kelola layanan konseling, pantau kedisiplinan, serta fasilitasi perkembangan potensi peserta didik secara optimal.</p>
                 </div>
             </div>
         </div>

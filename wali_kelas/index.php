@@ -1,7 +1,7 @@
 <?php
 /**
  * ====================================================================================
- * HALAMAN UTAMA (DASHBOARD) WALI KELAS - SISTEM INFORMASI BIMBINGAN KONSELING (SI BK7)
+ * HALAMAN UTAMA (DASHBOARD) WALI KELAS - SISTEM INFORMASI BIMBINGAN KONSELING (BK SMA 07 Bungo)
  * SMAN 7 BUNGO
  * ====================================================================================
  * Halaman ini berfungsi sebagai pusat kontrol dan pemantauan bagi Wali Kelas.
@@ -120,7 +120,7 @@ if ($kelas) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Wali Kelas | SI BK7 SMAN 7 Bungo</title>
+    <title>Dashboard Wali Kelas | BK SMA 07 Bungo</title>
     
     <!-- Memuat file CSS utama untuk layout panel admin/dashboard -->
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
@@ -141,7 +141,7 @@ if ($kelas) {
     <div class="sidebar">
         <!-- Header Brand Sidebar -->
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Wali Kelas Panel</p>
         </div>
         

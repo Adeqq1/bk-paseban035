@@ -1,5 +1,5 @@
 /* ==========================================================================
-   STYLESHEET UTAMA ADMIN — SI BK7 (Sistem Informasi Bimbingan Konseling)
+   STYLESHEET UTAMA ADMIN — BK SMA 07 Bungo (Sistem Informasi Bimbingan Konseling)
    Berisi seluruh gaya tampilan untuk panel Admin, Guru BK, Wali Kelas & Siswa.
    ========================================================================== */
 
@@ -266,7 +266,7 @@ body::after {
     /* Ukuran tombol membesar 5% agar terasa interaktif */
 }
 
-/* Teks logo "SI BK7" */
+/* Teks logo "BK SMA 07 Bungo" */
 .sidebar-header h3 {
     font-size: 1.4rem;
     font-weight: 800;

@@ -1,7 +1,7 @@
 <?php
 /**
  * ====================================================================================
- * MODUL REKAPITULASI STATUS DISIPLIN SISWA - PANEL WALI KELAS (SI BK7 SMAN 7 BUNGO)
+ * MODUL REKAPITULASI STATUS DISIPLIN SISWA - PANEL WALI KELAS (BK SMA 07 Bungo SMAN 7 BUNGO)
  * ====================================================================================
  * Halaman ini menampilkan rekapitulasi poin akumulasi kedisiplinan serta tingkat
  * status disiplin (Baik, Perlu Perhatian, Sangat Kritis) bagi seluruh siswa perwalian.
@@ -90,7 +90,7 @@ if ($kelas) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Disiplin Siswa | SI BK7 SMAN 7 Bungo</title>
+    <title>Status Disiplin Siswa | BK SMA 07 Bungo</title>
     
     <!-- File CSS Utama & CDN Font Awesome untuk Ikon -->
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
@@ -104,7 +104,7 @@ if ($kelas) {
     <!-- SIDEBAR NAVIGASI PANEL WALI KELAS -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Wali Kelas Panel</p>
         </div>
         <ul class="sidebar-menu">

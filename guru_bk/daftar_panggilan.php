@@ -10,9 +10,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'guru_bk') {
 }
 
 $user_id = $_SESSION['id'];
-$query_guru = mysqli_query($koneksi, "SELECT id, nama_lengkap FROM guru WHERE user_id = '$user_id'");
+$query_guru = mysqli_query($koneksi, "SELECT id, nama_lengkap FROM guru WHERE user_id = '$user_id' OR id = '$user_id'");
 $guru = mysqli_fetch_assoc($query_guru);
-$guru_id = $guru['id'];
+$guru_id = $guru ? $guru['id'] : 0;
 
 // Update Status Panggilan
 if (isset($_GET['update_status'])) {
@@ -88,7 +88,7 @@ $query_panggilan = mysqli_query($koneksi, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Panggilan Ortu | SI BK7</title>
+    <title>Daftar Panggilan Ortu | BK SMA 07 Bungo</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -287,7 +287,7 @@ $query_panggilan = mysqli_query($koneksi, "
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Guru BK Panel</p>
         </div>
         <ul class="sidebar-menu">

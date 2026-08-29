@@ -1,7 +1,7 @@
 <?php
 /**
  * ====================================================================================
- * MODUL STATUS LAPORAN PELANGGARAN - PANEL WALI KELAS (SI BK7 SMAN 7 BUNGO)
+ * MODUL STATUS LAPORAN PELANGGARAN - PANEL WALI KELAS (BK SMA 07 Bungo SMAN 7 BUNGO)
  * ====================================================================================
  * Halaman ini digunakan oleh Wali Kelas untuk memantau progres dan status tindak lanjut
  * dari laporan pelanggaran siswa perwalian yang telah dikirimkan ke Guru Bimbingan Konseling.
@@ -128,7 +128,7 @@ function tgl_indo_singkat($tanggal) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Status Laporan Pelanggaran | SI BK7 SMAN 7 Bungo</title>
+    <title>Status Laporan Pelanggaran | BK SMA 07 Bungo</title>
     
     <!-- Memuat file CSS admin & FontAwesome -->
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
@@ -282,7 +282,7 @@ function tgl_indo_singkat($tanggal) {
     <!-- SIDEBAR NAVIGASI PANEL WALI KELAS -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Wali Kelas Panel</p>
         </div>
         <ul class="sidebar-menu">

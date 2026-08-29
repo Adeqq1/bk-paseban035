@@ -1,9 +1,9 @@
 <?php
 // Konfigurasi akses database
-$host = "localhost"; // Alamat server database (localhost)
-$user = "root";      // Nama pengguna database (default XAMPP adalah root)
-$pass = "";          // Kata sandi database (default XAMPP kosong)
-$db   = "db_bk7";    // Nama database yang ingin dihubungkan
+$host = getenv('DB_HOST') ?: "mysql_shared"; // Alamat server database
+$user = getenv('DB_USERNAME') ?: "app2_user";      // Nama pengguna database
+$pass = getenv('DB_PASSWORD') ?: "App2_Secr3t_P@ss2026!"; // Kata sandi database
+$db   = getenv('DB_DATABASE') ?: "db_bk7";    // Nama database yang ingin dihubungkan
 
 // Menghubungkan skrip PHP ke database server MySQL
 $koneksi = mysqli_connect($host, $user, $pass, $db);
@@ -12,6 +12,10 @@ $koneksi = mysqli_connect($host, $user, $pass, $db);
 if (!$koneksi) {
     die("Koneksi gagal: " . mysqli_connect_error());
 }
+
+// Set charset & konfigurasi sql_mode agar kompatibel dengan MySQL 8
+mysqli_set_charset($koneksi, "utf8mb4");
+mysqli_query($koneksi, "SET SESSION sql_mode = (SELECT REPLACE(@@SESSION.sql_mode, 'ONLY_FULL_GROUP_BY,', ''))");
 
 // Cek apakah fungsi tgl_indo belum pernah dibuat sebelumnya untuk mencegah error bentrok fungsi
 if (!function_exists('tgl_indo')) {

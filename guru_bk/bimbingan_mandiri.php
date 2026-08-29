@@ -139,7 +139,7 @@ $total_pending = mysqli_fetch_assoc($q_pending)['total'] ?? 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bimbingan Mandiri | SI BK7</title>
+    <title>Bimbingan Mandiri | BK SMA 07 Bungo</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -359,7 +359,7 @@ $total_pending = mysqli_fetch_assoc($q_pending)['total'] ?? 0;
     <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>GURU BK PANEL</p>
         </div>
         <ul class="sidebar-menu">

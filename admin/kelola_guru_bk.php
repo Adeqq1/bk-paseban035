@@ -121,8 +121,8 @@ $query_guru = mysqli_query($koneksi, "SELECT * FROM guru $where_sql ORDER BY id 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kelola Guru BK | SI BK7</title>
-    <meta name="description" content="Manajemen data Guru Bimbingan Konseling - SI BK7">
+    <title>Kelola Guru BK | BK SMA 07 Bungo</title>
+    <meta name="description" content="Manajemen data Guru Bimbingan Konseling - BK SMA 07 Bungo">
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -133,7 +133,7 @@ $query_guru = mysqli_query($koneksi, "SELECT * FROM guru $where_sql ORDER BY id 
     <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Admin Panel</p>
         </div>
         <div class="sidebar-label">Menu Utama</div>

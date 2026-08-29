@@ -1,7 +1,7 @@
 <?php
 /**
  * ====================================================================================
- * MODUL DAFTAR SISWA PERWALIAN - PANEL WALI KELAS (SI BK7 SMAN 7 BUNGO)
+ * MODUL DAFTAR SISWA PERWALIAN - PANEL WALI KELAS (BK SMA 07 Bungo SMAN 7 BUNGO)
  * ====================================================================================
  * Halaman ini menampilkan daftar lengkap siswa binaan yang terdaftar pada kelas 
  * perwalian Wali Kelas yang sedang aktif, dilengkapi fitur pencarian live dan tombol 
@@ -56,7 +56,7 @@ if ($kelas) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Siswa Perwalian | SI BK7 SMAN 7 Bungo</title>
+    <title>Daftar Siswa Perwalian | BK SMA 07 Bungo</title>
     
     <!-- Memuat stylesheet utama admin -->
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
@@ -137,7 +137,7 @@ if ($kelas) {
     <!-- SIDEBAR NAVIGASI PANEL WALI KELAS -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Wali Kelas Panel</p>
         </div>
         <ul class="sidebar-menu">

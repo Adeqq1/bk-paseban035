@@ -57,7 +57,7 @@ $total_poin = mysqli_fetch_assoc($query_poin)['total'] ?? 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Siswa | SI BK7</title>
+    <title>Dashboard Siswa | BK SMA 07 Bungo</title>
     <!-- Menghubungkan berkas style admin agar tampilan sejalan -->
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -69,7 +69,7 @@ $total_poin = mysqli_fetch_assoc($query_poin)['total'] ?? 0;
     <!-- SIDEBAR (MENU SAMPING NAVIGASI) -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Siswa Panel</p>
         </div>
         <div class="sidebar-label">Menu Utama</div>

@@ -1,7 +1,7 @@
 <?php
 /**
  * ====================================================================================
- * MODUL RESET PASSWORD - SISTEM INFORMASI BIMBINGAN KONSELING (SI BK7)
+ * MODUL RESET PASSWORD - SISTEM INFORMASI BIMBINGAN KONSELING (BK SMA 07 Bungo)
  * SMAN 7 BUNGO
  * ====================================================================================
  * Halaman ini berfungsi untuk memproses pembuatan password baru bagi pengguna 
@@ -73,7 +73,7 @@ if (isset($_POST['reset'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password | SI BK7 SMAN 7 Bungo</title>
+    <title>Reset Password | BK SMA 07 Bungo</title>
     
     <!-- Library Ikon FontAwesome versi 6.4.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

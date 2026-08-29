@@ -1,7 +1,7 @@
 <?php
 /**
  * ====================================================================================
- * MODUL LAPOR PELANGGARAN SISWA - PANEL WALI KELAS (SI BK7 SMAN 7 BUNGO)
+ * MODUL LAPOR PELANGGARAN SISWA - PANEL WALI KELAS (BK SMA 07 Bungo SMAN 7 BUNGO)
  * ====================================================================================
  * Halaman ini digunakan oleh Wali Kelas untuk melaporkan insiden pelanggaran tata tertib
  * yang dilakukan oleh siswa perwaliannya langsung ke Guru Bimbingan Konseling (BK).
@@ -118,7 +118,7 @@ $selected_siswa_id = isset($_GET['siswa_id']) ? $_GET['siswa_id'] : '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lapor Pelanggaran | SI BK7 SMAN 7 Bungo</title>
+    <title>Lapor Pelanggaran | BK SMA 07 Bungo</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -250,7 +250,7 @@ $selected_siswa_id = isset($_GET['siswa_id']) ? $_GET['siswa_id'] : '';
     <!-- SIDEBAR NAVIGASI PANEL WALI KELAS -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Wali Kelas Panel</p>
         </div>
         <ul class="sidebar-menu">

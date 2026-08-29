@@ -14,12 +14,6 @@ $query_guru = mysqli_query($koneksi, "SELECT id, nama_lengkap FROM guru WHERE us
 $guru = mysqli_fetch_assoc($query_guru);
 $guru_id = $guru ? $guru['id'] : 0;
 
-
-$user_id = $_SESSION['id'];
-$q_guru = mysqli_query($koneksi, "SELECT id, nama_lengkap FROM guru WHERE user_id = '$user_id'");
-$guru_data = mysqli_fetch_assoc($q_guru);
-$guru_id = $guru_data['id'] ?? 0;
-
 $siswa_param = isset($_GET['siswa_id']) ? mysqli_real_escape_string($koneksi, $_GET['siswa_id']) : (isset($_GET['id']) ? mysqli_real_escape_string($koneksi, $_GET['id']) : '');
 $siswa = null;
 
@@ -80,7 +74,7 @@ if (isset($_POST['simpan'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buat Surat Panggilan | SI BK7</title>
+    <title>Buat Surat Panggilan | BK SMA 07 Bungo</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -111,7 +105,7 @@ if (isset($_POST['simpan'])) {
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h2>SI BK7</h2>
+            <h2>BK SMA 07 Bungo</h2>
             <p>Bimbingan Konseling</p>
         </div>
         <ul class="sidebar-menu">

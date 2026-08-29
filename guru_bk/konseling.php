@@ -1,7 +1,7 @@
 <?php
 /**
  * =========================================================================
- * RIWAYAT SESI KONSELING SISWA - SI BK7
+ * RIWAYAT SESI KONSELING SISWA - BK SMA 07 Bungo
  * Halaman ini menampilkan seluruh arsip dan riwayat penanganan konseling
  * (baik Bimbingan Mandiri maupun Tindak Lanjut Pelanggaran) yang telah diselesaikan.
  * =========================================================================
@@ -94,7 +94,7 @@ $query_pelanggaran = mysqli_query($koneksi, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riwayat Konseling Siswa | SI BK7</title>
+    <title>Riwayat Konseling Siswa | BK SMA 07 Bungo</title>
     <!-- File CSS Utama & CDN Font Awesome untuk Ikon -->
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -159,7 +159,7 @@ $query_pelanggaran = mysqli_query($koneksi, "
     <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Guru BK Panel</p>
         </div>
         <ul class="sidebar-menu">

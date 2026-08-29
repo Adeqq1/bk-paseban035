@@ -1,7 +1,7 @@
 <?php
 /**
  * ====================================================================================
- * HALAMAN UTAMA LOGIN - SISTEM INFORMASI BIMBINGAN KONSELING (SI BK7)
+ * HALAMAN UTAMA LOGIN - SISTEM INFORMASI BIMBINGAN KONSELING (BK SMA 07 Bungo)
  * SMAN 7 BUNGO
  * ====================================================================================
  * Halaman ini merupakan gerbang utama (landing page) untuk autentikasi masuk ke sistem.
@@ -35,7 +35,7 @@ if (isset($_SESSION['role'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | SI BK7 SMAN 7 Bungo</title>
+    <title>Login | BK SMA 07 Bungo</title>
     
     <!-- Library Ikon FontAwesome versi 6.4.0 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -272,7 +272,7 @@ if (isset($_SESSION['role'])) {
         </div>
         
         <!-- Judul & Sub-Judul Aplikasi -->
-        <h2>SI BK7</h2>
+        <h2>BK SMA 07 Bungo</h2>
         <p>Sistem Informasi Bimbingan Konseling</p>
         
         <!-- BLOCK NOTIFIKASI HASIL AUTENTIKASI: -->

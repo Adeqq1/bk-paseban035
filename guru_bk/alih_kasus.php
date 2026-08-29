@@ -1,7 +1,7 @@
 <?php
 /**
  * =========================================================================
- * HALAMAN MANAGEMENT ALIH TANGAN KASUS (REFERRAL) GURU BK - SI BK7
+ * HALAMAN MANAGEMENT ALIH TANGAN KASUS (REFERRAL) GURU BK - BK SMA 07 Bungo
  * Halaman ini mengelola dokumen rujukan/alih tangan kasus siswa kepada pihak
  * spesialis profesional (Psikolog, Psikiater, Kepolisian, Rumah Sakit, dll).
  * =========================================================================
@@ -97,7 +97,7 @@ $total_kasus = $query_alih ? mysqli_num_rows($query_alih) : 0;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layanan Alih Tangan Kasus | SI BK7</title>
+    <title>Layanan Alih Tangan Kasus | BK SMA 07 Bungo</title>
     <!-- File CSS Utama & CDN Font Awesome untuk Ikon -->
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -260,7 +260,7 @@ $total_kasus = $query_alih ? mysqli_num_rows($query_alih) : 0;
     <!-- NAVIGATION SIDEBAR UTAMA -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>GURU BK PANEL</p>
         </div>
         <ul class="sidebar-menu">

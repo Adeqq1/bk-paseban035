@@ -71,7 +71,7 @@ $query_rekap = mysqli_query($koneksi, "
 ");
 
 // Ambil daftar kelas untuk fallback/kebutuhan lain (opsional)
-$query_kelas = mysqli_query($koneksi, "SELECT * FROM kelas ORDER BY tingkat, nama_kelas");
+$query_kelas = mysqli_query($koneksi, "SELECT * FROM kelas ORDER BY nama_kelas ASC");
 
 // Ambil seluruh daftar siswa untuk dropdown filter
 $query_siswa_list = mysqli_query($koneksi, "SELECT s.id, s.nama_lengkap, s.kelas_id, k.nama_kelas FROM siswa s LEFT JOIN kelas k ON s.kelas_id = k.id WHERE s.status = 'aktif' ORDER BY k.nama_kelas, s.nama_lengkap");
@@ -81,7 +81,7 @@ $query_siswa_list = mysqli_query($koneksi, "SELECT s.id, s.nama_lengkap, s.kelas
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekap Poin Siswa | SI BK7</title>
+    <title>Rekap Poin Siswa | BK SMA 07 Bungo</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -266,7 +266,7 @@ $query_siswa_list = mysqli_query($koneksi, "SELECT s.id, s.nama_lengkap, s.kelas
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Guru BK Panel</p>
         </div>
         <ul class="sidebar-menu">

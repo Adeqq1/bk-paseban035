@@ -71,7 +71,7 @@ if ($filter_status == 'belum') {
 $where_date = "AND cp.tanggal BETWEEN '$start_date' AND '$end_date'";
 
 $query_laporan = mysqli_query($koneksi, "
-    SELECT cp.id, cp.siswa_id, cp.guru_id, cp.tanggal,
+    SELECT MAX(cp.id) as id, cp.siswa_id,
            s.nama_lengkap as nama_siswa, s.nisn, k.nama_kelas, 
            jp.nama_pelanggaran, jp.kategori,
            SUM(jp.poin) as total_poin,
@@ -79,7 +79,7 @@ $query_laporan = mysqli_query($koneksi, "
            GROUP_CONCAT(DISTINCT g.nama_lengkap SEPARATOR ', ') as nama_pelapor,
            GROUP_CONCAT(cp.keterangan SEPARATOR ' | ') as semua_keterangan,
            MAX(cp.tanggal) as max_tanggal,
-           kon.id as konseling_id,
+           MAX(kon.id) as konseling_id,
            GROUP_CONCAT(DISTINCT cp.pelapor_asli SEPARATOR ', ') as pelapor_asli_concat
     FROM catatan_pelanggaran cp
     JOIN siswa s ON cp.siswa_id = s.id
@@ -88,7 +88,7 @@ $query_laporan = mysqli_query($koneksi, "
     JOIN guru g ON cp.guru_id = g.id
     LEFT JOIN konseling kon ON (cp.id = kon.catatan_pelanggaran_id OR EXISTS (SELECT 1 FROM catatan_pelanggaran cp_k JOIN konseling kon_k ON cp_k.id = kon_k.catatan_pelanggaran_id WHERE cp_k.siswa_id = cp.siswa_id AND cp_k.pelanggaran_id = cp.pelanggaran_id AND cp_k.id >= cp.id))
     WHERE 1=1 $where_date $where_siswa $where_status
-    GROUP BY cp.siswa_id, cp.pelanggaran_id, (CASE WHEN kon.id IS NOT NULL THEN cp.id ELSE 0 END)
+    GROUP BY cp.siswa_id, cp.pelanggaran_id, s.nama_lengkap, s.nisn, k.nama_kelas, jp.nama_pelanggaran, jp.kategori, (CASE WHEN kon.id IS NOT NULL THEN cp.id ELSE 0 END)
     ORDER BY MAX(cp.tanggal) DESC, MAX(cp.id) DESC
 ");
 ?>
@@ -97,7 +97,7 @@ $query_laporan = mysqli_query($koneksi, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Laporan Masuk | SI BK7</title>
+    <title>Laporan Masuk | BK SMA 07 Bungo</title>
     <link rel="stylesheet" href="../assets/css/admin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -217,7 +217,7 @@ $query_laporan = mysqli_query($koneksi, "
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <h3>SI BK<span>7</span></h3>
+            <h3>BK SMA<span>07</span></h3>
             <p>Guru BK Panel</p>
         </div>
         <ul class="sidebar-menu">
