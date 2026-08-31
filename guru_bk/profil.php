@@ -71,9 +71,15 @@ if (isset($_POST['update_foto'])) {
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
         $allowed = array('jpg', 'jpeg', 'png');
         $filename = $_FILES['foto']['name'];
-        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         
-        if (in_array(strtolower($ext), $allowed)) {
+        if (!in_array($ext, $allowed)) {
+            $error = "Format file tidak diizinkan! Gunakan JPG, JPEG, atau PNG.";
+        } elseif ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
+            $error = "Ukuran file terlalu besar! Maksimal 5MB.";
+        } elseif (!@getimagesize($_FILES['foto']['tmp_name'])) {
+            $error = "File yang diunggah bukan gambar yang valid!";
+        } else {
             $new_filename = 'guru_bk_' . $user_id . '_' . time() . '.' . $ext;
             $destination = '../assets/uploads/profil/' . $new_filename;
             
@@ -87,7 +93,6 @@ if (isset($_POST['update_foto'])) {
                 mkdir('../assets/uploads/profil', 0777, true);
             }
 
-            
             // Bersihkan file yatim/orphan akibat reset database
             $old_files = glob('../assets/uploads/profil/' . 'guru_bk_' . $user_id . '_*.*');
             if ($old_files) {
@@ -116,8 +121,6 @@ if (isset($_POST['update_foto'])) {
             } else {
                 $error = "Gagal mengunggah foto ke folder server.";
             }
-        } else {
-            $error = "Format file tidak diizinkan! Gunakan JPG, JPEG, atau PNG.";
         }
     } else {
         $error = "Gagal mengunggah file foto.";

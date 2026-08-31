@@ -88,9 +88,15 @@ if (isset($_POST['update_foto'])) {
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
         $allowed  = array('jpg', 'jpeg', 'png');
         $filename = $_FILES['foto']['name'];
-        $ext      = pathinfo($filename, PATHINFO_EXTENSION);
+        $ext      = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        if (in_array(strtolower($ext), $allowed)) {
+        if (!in_array($ext, $allowed)) {
+            $error = "Format file tidak diizinkan! Gunakan JPG, JPEG, atau PNG.";
+        } elseif ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
+            $error = "Ukuran file terlalu besar! Maksimal 5MB.";
+        } elseif (!@getimagesize($_FILES['foto']['tmp_name'])) {
+            $error = "File yang diunggah bukan gambar yang valid!";
+        } else {
             $new_filename = 'wk_' . $user_id . '_' . time() . '.' . $ext;
             $destination  = '../assets/uploads/profil/' . $new_filename;
 
@@ -103,7 +109,6 @@ if (isset($_POST['update_foto'])) {
                 mkdir('../assets/uploads/profil', 0777, true);
             }
 
-            
             // Bersihkan file yatim/orphan akibat reset database
             $old_files = glob('../assets/uploads/profil/' . 'wk_' . $user_id . '_*.*');
             if ($old_files) {
@@ -120,9 +125,8 @@ if (isset($_POST['update_foto'])) {
                     unlink('../assets/uploads/profil/' . $old_photo);
                 }
                 
-                // Simpan nama foto baru di tabel user & guru
+                // Simpan nama foto baru di tabel user
                 if (mysqli_query($koneksi, "UPDATE user SET foto='$new_filename' WHERE id='$user_id'")) {
-                    mysqli_query($koneksi, "UPDATE guru SET foto='$new_filename' WHERE user_id='$user_id'");
                     $success          = "Foto profil berhasil diperbarui!";
                     $_SESSION['foto'] = $new_filename;
                     
@@ -137,8 +141,6 @@ if (isset($_POST['update_foto'])) {
             } else {
                 $error = "Gagal mengunggah foto ke folder server.";
             }
-        } else {
-            $error = "Format file tidak diizinkan! Gunakan JPG, JPEG, atau PNG.";
         }
     } else {
         $error = "Gagal mengunggah file foto.";

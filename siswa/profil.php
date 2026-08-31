@@ -46,12 +46,21 @@ if (isset($_POST['update_foto'])) {
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
         $allowed = array('jpg', 'jpeg', 'png');
         $filename = $_FILES['foto']['name'];
-        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
         
-        if (in_array(strtolower($ext), $allowed)) {
+        if (!in_array($ext, $allowed)) {
+            $msg = "error_ext";
+        } elseif ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
+            $msg = "error_size";
+        } elseif (!@getimagesize($_FILES['foto']['tmp_name'])) {
+            $msg = "error_invalid";
+        } else {
             $new_filename = 'siswa_' . $siswa['id'] . '_' . time() . '.' . $ext;
             $destination = '../assets/uploads/profil/' . $new_filename;
             
+            if (!file_exists('../assets/uploads/profil')) {
+                mkdir('../assets/uploads/profil', 0777, true);
+            }
             
             // Bersihkan file yatim/orphan akibat reset database
             $old_files = glob('../assets/uploads/profil/' . 'siswa_' . $siswa['id'] . '_*.*');
@@ -62,14 +71,24 @@ if (isset($_POST['update_foto'])) {
                     }
                 }
             }
+            $old_files_user = glob('../assets/uploads/profil/' . 'siswa_' . $user_id . '_*.*');
+            if ($old_files_user) {
+                foreach ($old_files_user as $f) {
+                    if (is_file($f)) {
+                        unlink($f);
+                    }
+                }
+            }
             
             if (move_uploaded_file($_FILES['foto']['tmp_name'], $destination)) {
                 // Hapus foto lama jika ada
-                if ($siswa['foto'] && file_exists('../assets/uploads/profil/' . $siswa['foto'])) {
+                if (!empty($siswa['foto']) && file_exists('../assets/uploads/profil/' . $siswa['foto'])) {
                     unlink('../assets/uploads/profil/' . $siswa['foto']);
                 }
                 
                 mysqli_query($koneksi, "UPDATE siswa SET foto='$new_filename' WHERE user_id='$user_id'");
+                mysqli_query($koneksi, "UPDATE user SET foto='$new_filename' WHERE id='$user_id'");
+                $_SESSION['foto'] = $new_filename;
                 $msg = "success_foto";
                 
                 // Refresh data
@@ -78,9 +97,9 @@ if (isset($_POST['update_foto'])) {
             } else {
                 $msg = "error_upload";
             }
-        } else {
-            $msg = "error_ext";
         }
+    } else {
+        $msg = "error_upload";
     }
 }
 
@@ -319,6 +338,8 @@ if (isset($_POST['update_password'])) {
                         if ($msg == 'success_keamanan') echo "Keamanan akun & Email Pemulihan berhasil diperbarui!";
                         if ($msg == 'error_match') echo "Konfirmasi password tidak cocok!";
                         if ($msg == 'error_ext') echo "Format file foto tidak diizinkan! Gunakan JPG/PNG.";
+                        if ($msg == 'error_size') echo "Ukuran file terlalu besar! Maksimal 5MB.";
+                        if ($msg == 'error_invalid') echo "File yang diunggah bukan gambar yang valid!";
                         if ($msg == 'error_upload') echo "Gagal mengunggah foto.";
                         if ($msg == 'error') echo "Terjadi kesalahan sistem.";
                     ?>
