@@ -12,40 +12,85 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 // Proses Tambah Kelas
 if (isset($_POST['tambah'])) {
-    $nama_kelas = mysqli_real_escape_string($koneksi, $_POST['nama_kelas']);
-    $wali_kelas_id = mysqli_real_escape_string($koneksi, $_POST['wali_kelas_id']);
-    $wali_kelas_id = $wali_kelas_id == "" ? "NULL" : "'$wali_kelas_id'";
+    $nama_kelas = trim($_POST['nama_kelas']);
+    $nama_kelas_escaped = mysqli_real_escape_string($koneksi, $nama_kelas);
+    $wali_kelas_id = !empty($_POST['wali_kelas_id']) ? mysqli_real_escape_string($koneksi, $_POST['wali_kelas_id']) : null;
+    $wali_kelas_val = $wali_kelas_id ? "'$wali_kelas_id'" : "NULL";
 
-    $query = "INSERT INTO kelas (nama_kelas, wali_kelas_id) VALUES ('$nama_kelas', $wali_kelas_id)";
-    if (mysqli_query($koneksi, $query)) {
-        $msg = "success_tambah";
+    // Cek apakah nama kelas sudah ada di database (case-insensitive)
+    $cek_nama = mysqli_query($koneksi, "SELECT id FROM kelas WHERE LOWER(TRIM(nama_kelas)) = LOWER(TRIM('$nama_kelas_escaped'))");
+    if ($cek_nama && mysqli_num_rows($cek_nama) > 0) {
+        $msg = "error_duplikat";
+    } elseif ($wali_kelas_id && mysqli_num_rows(mysqli_query($koneksi, "SELECT id FROM kelas WHERE wali_kelas_id = '$wali_kelas_id'")) > 0) {
+        $msg = "error_wali";
     } else {
-        $msg = "error";
+        try {
+            $query = "INSERT INTO kelas (nama_kelas, wali_kelas_id) VALUES ('$nama_kelas_escaped', $wali_kelas_val)";
+            if (mysqli_query($koneksi, $query)) {
+                $msg = "success_tambah";
+            } else {
+                $msg = "error";
+            }
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() == 1062 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                if (strpos($e->getMessage(), 'nama_kelas') !== false) {
+                    $msg = "error_duplikat";
+                } else {
+                    $msg = "error_wali";
+                }
+            } else {
+                $msg = "error";
+            }
+        }
     }
 }
 
 // Proses Edit Kelas
 if (isset($_POST['edit'])) {
     $id = mysqli_real_escape_string($koneksi, $_POST['id']);
-    $nama_kelas = mysqli_real_escape_string($koneksi, $_POST['nama_kelas']);
-    $wali_kelas_id = mysqli_real_escape_string($koneksi, $_POST['wali_kelas_id']);
-    $wali_kelas_id = $wali_kelas_id == "" ? "NULL" : "'$wali_kelas_id'";
+    $nama_kelas = trim($_POST['nama_kelas']);
+    $nama_kelas_escaped = mysqli_real_escape_string($koneksi, $nama_kelas);
+    $wali_kelas_id = !empty($_POST['wali_kelas_id']) ? mysqli_real_escape_string($koneksi, $_POST['wali_kelas_id']) : null;
+    $wali_kelas_val = $wali_kelas_id ? "'$wali_kelas_id'" : "NULL";
 
-    $query = "UPDATE kelas SET nama_kelas='$nama_kelas', wali_kelas_id=$wali_kelas_id WHERE id='$id'";
-    if (mysqli_query($koneksi, $query)) {
-        $msg = "success_edit";
+    // Cek apakah nama kelas sudah digunakan oleh kelas lain
+    $cek_nama = mysqli_query($koneksi, "SELECT id FROM kelas WHERE LOWER(TRIM(nama_kelas)) = LOWER(TRIM('$nama_kelas_escaped')) AND id != '$id'");
+    if ($cek_nama && mysqli_num_rows($cek_nama) > 0) {
+        $msg = "error_duplikat";
+    } elseif ($wali_kelas_id && mysqli_num_rows(mysqli_query($koneksi, "SELECT id FROM kelas WHERE wali_kelas_id = '$wali_kelas_id' AND id != '$id'")) > 0) {
+        $msg = "error_wali";
     } else {
-        $msg = "error";
+        try {
+            $query = "UPDATE kelas SET nama_kelas='$nama_kelas_escaped', wali_kelas_id=$wali_kelas_val WHERE id='$id'";
+            if (mysqli_query($koneksi, $query)) {
+                $msg = "success_edit";
+            } else {
+                $msg = "error";
+            }
+        } catch (mysqli_sql_exception $e) {
+            if ($e->getCode() == 1062 || strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                if (strpos($e->getMessage(), 'nama_kelas') !== false) {
+                    $msg = "error_duplikat";
+                } else {
+                    $msg = "error_wali";
+                }
+            } else {
+                $msg = "error";
+            }
+        }
     }
 }
 
 // Proses Hapus Kelas
 if (isset($_GET['hapus'])) {
     $id = mysqli_real_escape_string($koneksi, $_GET['hapus']);
-    
-    if (mysqli_query($koneksi, "DELETE FROM kelas WHERE id='$id'")) {
-        $msg = "success_hapus";
-    } else {
+    try {
+        if (mysqli_query($koneksi, "DELETE FROM kelas WHERE id='$id'")) {
+            $msg = "success_hapus";
+        } else {
+            $msg = "error";
+        }
+    } catch (Throwable $e) {
         $msg = "error";
     }
 }
@@ -146,12 +191,16 @@ $query_wali = mysqli_query($koneksi, "
         <?php if (isset($msg)): ?>
             <div class="alert <?php echo $msg == 'success_hapus' ? 'alert-delete' : (strpos($msg, 'success') !== false ? 'alert-success' : 'alert-danger'); ?>">
                 <i class="fas <?php echo $msg == 'success_hapus' ? 'fa-trash-alt' : (strpos($msg, 'success') !== false ? 'fa-check-circle' : 'fa-times-circle'); ?>"></i>
-                <?php 
-                    if ($msg == 'success_tambah') echo "Data kelas berhasil ditambahkan!";
-                    if ($msg == 'success_edit') echo "Data kelas berhasil diperbarui!";
-                    if ($msg == 'success_hapus') echo "Data kelas berhasil dihapus!";
-                    if ($msg == 'error') echo "Terjadi kesalahan sistem atau nama kelas sudah ada / wali kelas sudah ditugaskan.";
-                ?>
+                <div>
+                    <?php 
+                        if ($msg == 'success_tambah') echo "Data kelas berhasil ditambahkan!";
+                        if ($msg == 'success_edit') echo "Data kelas berhasil diperbarui!";
+                        if ($msg == 'success_hapus') echo "Data kelas berhasil dihapus!";
+                        if ($msg == 'error_duplikat') echo "Nama kelas tersebut sudah ada! Silakan gunakan nama kelas yang berbeda.";
+                        if ($msg == 'error_wali') echo "Guru yang dipilih sudah menjadi Wali Kelas untuk kelas lain!";
+                        if ($msg == 'error') echo "Terjadi kesalahan sistem saat memproses data kelas.";
+                    ?>
+                </div>
             </div>
         <?php endif; ?>
 

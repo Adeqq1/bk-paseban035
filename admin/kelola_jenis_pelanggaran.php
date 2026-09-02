@@ -18,15 +18,25 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 // Menambahkan master data Jenis Pelanggaran beserta bobot poin dan kategorinya.
 // =========================================================================
 if (isset($_POST['tambah'])) {
-    $nama = mysqli_real_escape_string($koneksi, $_POST['nama_pelanggaran']);
+    $nama = trim($_POST['nama_pelanggaran']);
+    $nama_escaped = mysqli_real_escape_string($koneksi, $nama);
     $poin = mysqli_real_escape_string($koneksi, $_POST['poin']);
     $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori']);
 
-    $query = "INSERT INTO jenis_pelanggaran (nama_pelanggaran, poin, kategori) VALUES ('$nama', '$poin', '$kategori')";
-    if (mysqli_query($koneksi, $query)) {
-        $msg = "success_tambah";
+    $cek = mysqli_query($koneksi, "SELECT id FROM jenis_pelanggaran WHERE LOWER(TRIM(nama_pelanggaran)) = LOWER(TRIM('$nama_escaped'))");
+    if ($cek && mysqli_num_rows($cek) > 0) {
+        $msg = "error_duplikat";
     } else {
-        $msg = "error";
+        try {
+            $query = "INSERT INTO jenis_pelanggaran (nama_pelanggaran, poin, kategori) VALUES ('$nama_escaped', '$poin', '$kategori')";
+            if (mysqli_query($koneksi, $query)) {
+                $msg = "success_tambah";
+            } else {
+                $msg = "error";
+            }
+        } catch (Throwable $e) {
+            $msg = "error";
+        }
     }
 }
 
@@ -36,15 +46,25 @@ if (isset($_POST['tambah'])) {
 // =========================================================================
 if (isset($_POST['edit'])) {
     $id = mysqli_real_escape_string($koneksi, $_POST['id']);
-    $nama = mysqli_real_escape_string($koneksi, $_POST['nama_pelanggaran']);
+    $nama = trim($_POST['nama_pelanggaran']);
+    $nama_escaped = mysqli_real_escape_string($koneksi, $nama);
     $poin = mysqli_real_escape_string($koneksi, $_POST['poin']);
     $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori']);
 
-    $query = "UPDATE jenis_pelanggaran SET nama_pelanggaran='$nama', poin='$poin', kategori='$kategori' WHERE id='$id'";
-    if (mysqli_query($koneksi, $query)) {
-        $msg = "success_edit";
+    $cek = mysqli_query($koneksi, "SELECT id FROM jenis_pelanggaran WHERE LOWER(TRIM(nama_pelanggaran)) = LOWER(TRIM('$nama_escaped')) AND id != '$id'");
+    if ($cek && mysqli_num_rows($cek) > 0) {
+        $msg = "error_duplikat";
     } else {
-        $msg = "error";
+        try {
+            $query = "UPDATE jenis_pelanggaran SET nama_pelanggaran='$nama_escaped', poin='$poin', kategori='$kategori' WHERE id='$id'";
+            if (mysqli_query($koneksi, $query)) {
+                $msg = "success_edit";
+            } else {
+                $msg = "error";
+            }
+        } catch (Throwable $e) {
+            $msg = "error";
+        }
     }
 }
 
@@ -54,10 +74,14 @@ if (isset($_POST['edit'])) {
 // =========================================================================
 if (isset($_GET['hapus'])) {
     $id = mysqli_real_escape_string($koneksi, $_GET['hapus']);
-    if (mysqli_query($koneksi, "DELETE FROM jenis_pelanggaran WHERE id='$id'")) {
-        $msg = "success_hapus";
-    } else {
-        $msg = "error_hapus"; // Terjadi kegagalan jika jenis ini masih terhubung ke tabel catatan_pelanggaran
+    try {
+        if (mysqli_query($koneksi, "DELETE FROM jenis_pelanggaran WHERE id='$id'")) {
+            $msg = "success_hapus";
+        } else {
+            $msg = "error_hapus";
+        }
+    } catch (Throwable $e) {
+        $msg = "error_hapus";
     }
 }
 
@@ -170,13 +194,16 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
         <?php if (isset($msg)): ?>
             <div class="alert <?php echo $msg == 'success_hapus' ? 'alert-delete' : (strpos($msg, 'success') !== false ? 'alert-success' : 'alert-danger'); ?>">
                 <i class="fas <?php echo $msg == 'success_hapus' ? 'fa-trash-alt' : (strpos($msg, 'success') !== false ? 'fa-check-circle' : 'fa-times-circle'); ?>"></i>
-                <?php 
-                    if ($msg == 'success_tambah') echo "Jenis Pelanggaran berhasil ditambahkan!";
-                    if ($msg == 'success_edit') echo "Jenis Pelanggaran berhasil diperbarui!";
-                    if ($msg == 'success_hapus') echo "Jenis Pelanggaran berhasil dihapus!";
-                    if ($msg == 'error') echo "Terjadi kesalahan sistem.";
-                    if ($msg == 'error_hapus') echo "Tidak dapat menghapus. Jenis ini mungkin sedang digunakan dalam catatan pelanggaran.";
-                ?>
+                <div>
+                    <?php 
+                        if ($msg == 'success_tambah') echo "Jenis Pelanggaran berhasil ditambahkan!";
+                        if ($msg == 'success_edit') echo "Jenis Pelanggaran berhasil diperbarui!";
+                        if ($msg == 'success_hapus') echo "Jenis Pelanggaran berhasil dihapus!";
+                        if ($msg == 'error_duplikat') echo "Nama jenis pelanggaran tersebut sudah terdaftar di sistem!";
+                        if ($msg == 'error') echo "Terjadi kesalahan sistem.";
+                        if ($msg == 'error_hapus') echo "Tidak dapat menghapus. Jenis ini mungkin sedang digunakan dalam catatan pelanggaran.";
+                    ?>
+                </div>
             </div>
         <?php endif; ?>
 
