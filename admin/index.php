@@ -17,6 +17,16 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     header("Location: ../index.php");
     exit();
 }
+// --- FITUR DASHBOARD ADMIN DIMATIKAN SEMENTARA UNTUK TESTING DOSEN ---
+// Walaupun dia punya role admin, tendang kembali ke halaman utama
+// if ($_SESSION['role'] === 'admin') {
+//     session_destroy();
+//     echo "<script>
+//             alert('Maaf, akses ke Halaman Dashboard Admin sedang dikunci oleh sistem!');
+//             window.location.href = '../index.php';
+//           </script>";
+//     exit();
+// }
 // ==============================================================================
 // BAGIAN 2: PENGAMBILAN DATA STATISTIKsecara REAL-TIME DARI DATABASE
 // ==============================================================================
