@@ -272,7 +272,7 @@ if (isset($_SESSION['role'])) {
         </div>
         
         <!-- Judul & Sub-Judul Aplikasi -->
-        <h2>BK ADE Bungo</h2>
+        <h2>BK SMA 07 Bungo</h2>
         <p>Sistem Informasi Bimbingan Konseling</p>
         
         <!-- BLOCK NOTIFIKASI HASIL AUTENTIKASI: -->
