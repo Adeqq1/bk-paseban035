@@ -42,6 +42,16 @@ $nama_guru = preg_replace('/,?\s*s\.?kom\.?/i', ', S.Kom.', $nama_guru);
 $nama_guru = preg_replace('/,?\s*s\.?ag\.?/i', ', S.Ag.', $nama_guru);
 $nama_guru = str_replace([',,', '..'], [',', '.'], $nama_guru);
 
+// Mengambil data foto Wali Kelas secara real-time dari database
+$query_user = mysqli_query($koneksi, "SELECT foto FROM user WHERE id='$user_id'");
+$user_row = mysqli_fetch_assoc($query_user);
+$foto_wk = $user_row['foto'] ?? $_SESSION['foto'] ?? '';
+$foto_wk_exists = !empty($foto_wk) && file_exists(__DIR__ . '/../assets/uploads/profil/' . $foto_wk);
+if ($foto_wk_exists) {
+    $_SESSION['foto'] = $foto_wk;
+}
+$foto_wk_url = $foto_wk_exists ? '../assets/uploads/profil/' . htmlspecialchars($foto_wk) : '';
+
 // 5. MENGAMBIL DATA KELAS PERWALIAN:
 // Query untuk mencari kelas yang diampu oleh wali kelas ini (wali_kelas_id = guru_id)
 $query_kelas = mysqli_query($koneksi, "SELECT * FROM kelas WHERE wali_kelas_id = '$guru_id'");
@@ -161,9 +171,9 @@ if ($kelas) {
         <div class="sidebar-footer">
             <div class="avatar">
                 <!-- Mengecek apakah pengguna memiliki foto profil yang tersimpan di sistem -->
-                <?php if (!empty($_SESSION['foto']) && file_exists('../assets/uploads/profil/' . $_SESSION['foto'])): ?>
+                <?php if ($foto_wk_exists): ?>
                     <!-- Jika ada, tampilkan foto profil tersebut -->
-                    <img src="../assets/uploads/profil/<?php echo $_SESSION['foto']; ?>" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+                    <img src="<?php echo $foto_wk_url; ?>" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
                 <?php else: ?>
                     <!-- Jika tidak ada foto, tampilkan inisial (huruf pertama) dari nama pengguna -->
                     <?php echo strtoupper(substr($_SESSION['username'] ?? 'W', 0, 1)); ?>
@@ -187,8 +197,13 @@ if ($kelas) {
         <div class="header" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 2rem; border-radius: 14px; margin-bottom: 2rem; color: white; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25);">
             
             <div style="display: flex; align-items: center; gap: 1.5rem; flex: 1; min-width: 280px;">
-                <div style="background: rgba(255,255,255,0.1); width: 64px; height: 64px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.15);">
-                    <i class="fas fa-chalkboard-teacher" style="font-size: 1.9rem; color: #60a5fa;"></i>
+                <!-- Preview Foto Profil di Header Dashboard -->
+                <div style="width: 64px; height: 64px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; backdrop-filter: blur(4px); border: 2px solid rgba(255,255,255,0.18); box-shadow: 0 4px 12px rgba(0,0,0,0.25); overflow: hidden; background: rgba(255,255,255,0.1);">
+                    <?php if ($foto_wk_exists): ?>
+                        <img src="<?php echo $foto_wk_url; ?>" alt="Foto Profil" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php else: ?>
+                        <i class="fas fa-chalkboard-teacher" style="font-size: 1.9rem; color: #60a5fa;"></i>
+                    <?php endif; ?>
                 </div>
                 
                 <div>
@@ -206,8 +221,12 @@ if ($kelas) {
             
             <!-- Badge Status Wali Kelas -->
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <div style="background: rgba(255,255,255,0.08); padding: 0.65rem 1.1rem; border-radius: 999px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.18);">
-                    <span style="display: block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);"></span>
+                <div style="background: rgba(255,255,255,0.08); padding: 0.5rem 1rem; border-radius: 999px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.18);">
+                    <?php if ($foto_wk_exists): ?>
+                        <img src="<?php echo $foto_wk_url; ?>" alt="Foto" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255,255,255,0.4);">
+                    <?php else: ?>
+                        <span style="display: block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);"></span>
+                    <?php endif; ?>
                     <span style="font-size: 0.85rem; font-weight: 600; color: #f8fafc;">Wali Kelas Active</span>
                 </div>
             </div>

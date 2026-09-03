@@ -22,108 +22,122 @@ $user = mysqli_fetch_assoc($query_user);
 $query_guru = mysqli_query($koneksi, "SELECT * FROM guru WHERE user_id='$user_id'");
 $guru = mysqli_fetch_assoc($query_guru);
 
+// Helper fungsi upload foto profil Guru BK yang aman dan reliabel
+function uploadFotoProfilGuruBk($file, $user_id, $koneksi, $foto_lama = '') {
+    $allowed = array('jpg', 'jpeg', 'png', 'webp');
+    $filename = $file['name'];
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    
+    if (!in_array($ext, $allowed)) {
+        return ['success' => false, 'error' => 'Format file tidak diizinkan! Gunakan format JPG, JPEG, PNG, atau WEBP.'];
+    }
+    if ($file['size'] > 10 * 1024 * 1024) {
+        return ['success' => false, 'error' => 'Ukuran file terlalu besar! Maksimal 10MB.'];
+    }
+    if (!@getimagesize($file['tmp_name'])) {
+        return ['success' => false, 'error' => 'File yang dipilih bukan gambar yang valid!'];
+    }
+    
+    $upload_dir = __DIR__ . '/../assets/uploads/profil/';
+    if (!file_exists($upload_dir)) {
+        mkdir($upload_dir, 0775, true);
+    }
+    
+    $new_filename = 'guru_bk_' . $user_id . '_' . time() . '.' . $ext;
+    $destination = $upload_dir . $new_filename;
+    
+    // Hapus file lama yang mungkin tertinggal untuk user ini
+    $old_files = glob($upload_dir . 'guru_bk_' . $user_id . '_*.*');
+    if ($old_files) {
+        foreach ($old_files as $f) {
+            if (is_file($f)) {
+                @unlink($f);
+            }
+        }
+    }
+    
+    if (move_uploaded_file($file['tmp_name'], $destination)) {
+        @chmod($destination, 0664);
+        if (!empty($foto_lama) && file_exists($upload_dir . $foto_lama) && $foto_lama !== $new_filename) {
+            @unlink($upload_dir . $foto_lama);
+        }
+        
+        if (mysqli_query($koneksi, "UPDATE user SET foto='$new_filename' WHERE id='$user_id'")) {
+            $_SESSION['foto'] = $new_filename;
+            return ['success' => true, 'filename' => $new_filename];
+        } else {
+            return ['success' => false, 'error' => 'Gagal memperbarui database foto: ' . mysqli_error($koneksi)];
+        }
+    } else {
+        return ['success' => false, 'error' => 'Gagal mengunggah foto ke folder server.'];
+    }
+}
+
 // Proses ketika tombol 'Simpan Perubahan' diklik
 if (isset($_POST['update'])) {
     $username = mysqli_real_escape_string($koneksi, $_POST['username']);
     
-    // BAGIAN YANG MENGUNCI DATA: Pengecekan if ini mencegah email di-overwrite
     if (!empty($user['email'])) {
         $email = $user['email']; // Paksa gunakan email lama yang sudah terdaftar
     } else {
         $email = mysqli_real_escape_string($koneksi, $_POST['email'] ?? ''); // Simpan email baru
     }
 
-    // Kunci Nama Lengkap & NIP: Hanya Admin yang memiliki wewenang mengubah data ini
-    $nama_lengkap = mysqli_real_escape_string($koneksi, $guru['nama_lengkap'] ?? '');
-    $nip          = mysqli_real_escape_string($koneksi, $guru['nip'] ?? '');
     $password_baru = $_POST['password_baru'];
-
-    // Update data guru
-    $sql_guru = "UPDATE guru SET nama_lengkap='$nama_lengkap', nip='$nip' WHERE user_id='$user_id'";
-    $update_guru = mysqli_query($koneksi, $sql_guru);
 
     // Query dasar untuk memperbarui username dan email pada users
     $sql_user = "UPDATE user SET username='$username', email='$email' WHERE id='$user_id'";
-    
-    // Jika kolom password baru diisi, maka update juga password-nya
     if (!empty($password_baru)) {
-        $hashed_password = password_hash($password_baru, PASSWORD_DEFAULT); // Hash password untuk keamanan
+        $hashed_password = password_hash($password_baru, PASSWORD_DEFAULT);
         $sql_user = "UPDATE user SET username='$username', email='$email', password='$hashed_password' WHERE id='$user_id'";
     }
 
     $update_user = mysqli_query($koneksi, $sql_user);
 
-    if ($update_guru && $update_user) {
-        $_SESSION['username'] = $username; // Update session username
+    if ($update_user) {
+        $_SESSION['username'] = $username;
         $success = "Profil dan Sandi berhasil diperbarui!";
-        // Ambil ulang data terbaru dari database
+        
+        // Cek jika ada foto yang disertakan saat klik Simpan Perubahan
+        if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+            $res = uploadFotoProfilGuruBk($_FILES['foto'], $user_id, $koneksi, $user['foto'] ?? '');
+            if ($res['success']) {
+                $success = "Profil, sandi, dan foto berhasil diperbarui!";
+            } else {
+                $error = $res['error'];
+            }
+        }
+        
+        // Refresh data terbaru
         $query_user = mysqli_query($koneksi, "SELECT * FROM user WHERE id='$user_id'");
         $user = mysqli_fetch_assoc($query_user);
         $query_guru = mysqli_query($koneksi, "SELECT * FROM guru WHERE user_id='$user_id'");
         $guru = mysqli_fetch_assoc($query_guru);
     } else {
-        $error = "Gagal memperbarui profil.";
+        $error = "Gagal memperbarui profil: " . mysqli_error($koneksi);
     }
 }
 
-// Proses ketika tombol 'Unggah Foto' diklik (atau auto-submit foto)
+// Proses ketika tombol 'Unggah Foto' / 'Simpan Foto' diklik tersendiri
 if (isset($_POST['update_foto'])) {
-    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-        $allowed = array('jpg', 'jpeg', 'png');
-        $filename = $_FILES['foto']['name'];
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        
-        if (!in_array($ext, $allowed)) {
-            $error = "Format file tidak diizinkan! Gunakan JPG, JPEG, atau PNG.";
-        } elseif ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
-            $error = "Ukuran file terlalu besar! Maksimal 5MB.";
-        } elseif (!@getimagesize($_FILES['foto']['tmp_name'])) {
-            $error = "File yang diunggah bukan gambar yang valid!";
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+        $res = uploadFotoProfilGuruBk($_FILES['foto'], $user_id, $koneksi, $user['foto'] ?? '');
+        if ($res['success']) {
+            $success = "Foto profil berhasil diperbarui!";
+            $query_user = mysqli_query($koneksi, "SELECT * FROM user WHERE id='$user_id'");
+            $user = mysqli_fetch_assoc($query_user);
         } else {
-            $new_filename = 'guru_bk_' . $user_id . '_' . time() . '.' . $ext;
-            $destination = '../assets/uploads/profil/' . $new_filename;
-            
-            // Ambil foto lama dari database secara langsung
-            $q_old = mysqli_query($koneksi, "SELECT foto FROM user WHERE id='$user_id'");
-            $d_old = mysqli_fetch_assoc($q_old);
-            $old_photo = $d_old['foto'] ?? '';
-
-            // Buat folder uploads/profil jika belum ada
-            if (!file_exists('../assets/uploads/profil')) {
-                mkdir('../assets/uploads/profil', 0777, true);
-            }
-
-            // Bersihkan file yatim/orphan akibat reset database
-            $old_files = glob('../assets/uploads/profil/' . 'guru_bk_' . $user_id . '_*.*');
-            if ($old_files) {
-                foreach ($old_files as $f) {
-                    if (is_file($f)) {
-                        unlink($f);
-                    }
-                }
-            }
-            
-            if (move_uploaded_file($_FILES['foto']['tmp_name'], $destination)) {
-                // Hapus foto lama jika ada
-                if (!empty($old_photo) && file_exists('../assets/uploads/profil/' . $old_photo)) {
-                    unlink('../assets/uploads/profil/' . $old_photo);
-                }
-                
-                if (mysqli_query($koneksi, "UPDATE user SET foto='$new_filename' WHERE id='$user_id'")) {
-                    $success = "Foto profil berhasil diperbarui!";
-                    $_SESSION['foto'] = $new_filename; // Update session
-                    // Ambil ulang data terbaru dari database
-                    $query_user = mysqli_query($koneksi, "SELECT * FROM user WHERE id='$user_id'");
-                    $user = mysqli_fetch_assoc($query_user);
-                } else {
-                    $error = "Gagal menyimpan data foto ke database.";
-                }
-            } else {
-                $error = "Gagal mengunggah foto ke folder server.";
-            }
+            $error = $res['error'];
         }
     } else {
-        $error = "Gagal mengunggah file foto.";
+        $upload_err = $_FILES['foto']['error'] ?? -1;
+        if ($upload_err === UPLOAD_ERR_INI_SIZE || $upload_err === UPLOAD_ERR_FORM_SIZE) {
+            $error = "Ukuran file terlalu besar melebihi batas server!";
+        } elseif ($upload_err === UPLOAD_ERR_NO_FILE) {
+            $error = "Silakan pilih file foto terlebih dahulu sebelum menyimpan!";
+        } else {
+            $error = "Terjadi kesalahan saat mengunggah foto (Kode Error: $upload_err).";
+        }
     }
 }
 ?>
@@ -300,37 +314,58 @@ if (isset($_POST['update_foto'])) {
             <?php endif; ?>
 
             <div class="form-card">
-                <div class="form-card-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
-                    <div class="profile-avatar-container" style="width: 100px; height: 100px; border-radius: 50%; position: relative; cursor: pointer; overflow: hidden; border: 4px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <?php if (!empty($user['foto'])): ?>
-                            <!-- Jika ada, tampilkan foto profil tersebut -->
-                            <img src="../assets/uploads/profil/<?php echo $user['foto']; ?>" style="width: 100%; height: 100%; object-fit: cover;">
-                        <?php else: ?>
-                            <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb, #d97706); color: white; font-size: 2.5rem;">
-                                <!-- Jika tidak ada foto, tampilkan inisial (huruf pertama) dari nama pengguna -->
-                                <?php echo strtoupper(substr($user['username'], 0, 1)); ?>
+                <?php
+                $has_photo = !empty($user['foto']) && file_exists(__DIR__ . '/../assets/uploads/profil/' . $user['foto']);
+                $photo_src = $has_photo ? '../assets/uploads/profil/' . htmlspecialchars($user['foto']) : '';
+                ?>
+                <form action="" method="POST" enctype="multipart/form-data" id="form-profil">
+                    <div class="form-card-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.75rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+                        <div class="profile-avatar-container" id="avatar-container" onclick="document.getElementById('foto-upload').click();" style="width: 110px; height: 110px; border-radius: 50%; position: relative; cursor: pointer; overflow: hidden; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                            <?php if ($has_photo): ?>
+                                <img id="preview-avatar-img" src="<?php echo $photo_src; ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                            <?php else: ?>
+                                <div id="avatar-placeholder" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb, #d97706); color: white; font-size: 2.5rem;">
+                                    <?php echo strtoupper(substr($guru['nama_lengkap'] ?? $user['username'] ?? 'G', 0, 1)); ?>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <!-- Upload Overlay -->
+                            <div class="profile-avatar-overlay" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px;">
+                                <i class="fas fa-camera" style="font-size: 1.2rem; margin: 0; line-height: 1;"></i>
+                                <span style="font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; display: block; white-space: nowrap; font-family: sans-serif;">Ubah Foto</span>
                             </div>
-                        <?php endif; ?>
+                        </div>
+
+                        <!-- Tombol Pilih Foto Langsung (Terlihat jelas di Mobile & Desktop) -->
+                        <button type="button" class="btn-change-photo" onclick="document.getElementById('foto-upload').click();" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                            <i class="fas fa-camera"></i> Pilih / Ubah Foto
+                        </button>
                         
-                        <!-- Upload Overlay -->
-                        <div class="profile-avatar-overlay" onclick="document.getElementById('foto-upload').click();" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px;">
-                            <i class="fas fa-camera" style="font-size: 1.2rem; margin: 0; line-height: 1;"></i>
-                            <span style="font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; display: block; white-space: nowrap; font-family: sans-serif;">Ubah Foto</span>
+                        <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg, image/webp" style="display:none;" onchange="previewFoto(this);">
+
+                        <!-- Panel Aksi Preview Foto Baru -->
+                        <div id="preview-box" style="display:none; width: 100%; max-width: 420px; margin-top: 5px;">
+                            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; text-align: center;">
+                                <div style="color: #065f46; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
+                                    <i class="fas fa-eye"></i> Preview Foto Baru Terpilih
+                                </div>
+                                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                                    <button type="submit" name="update_foto" style="background: #10b981; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-upload"></i> Simpan Foto Profil
+                                    </button>
+                                    <button type="button" onclick="cancelPreview()" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer;">
+                                        <i class="fas fa-times"></i> Batal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="font-weight:700;font-size:1.15rem;color:#0f172a;"><?php echo htmlspecialchars($guru['nama_lengkap'] ?? $user['username']); ?></div>
+                            <div style="font-size:0.78rem;color:#475569;margin-top:2px;">Guru BK (NIP: <?php echo htmlspecialchars($guru['nip'] ?? '-'); ?>)</div>
                         </div>
                     </div>
-                    <div>
-                        <div style="font-weight:700;font-size:1.15rem;color:#0f172a;"><?php echo $guru['nama_lengkap'] ?? $user['username']; ?></div>
-                        <div style="font-size:0.78rem;color:#475569;margin-top:2px;">Guru BK (NIP: <?php echo $guru['nip'] ?? '-'; ?>)</div>
-                    </div>
-                </div>
 
-                <!-- Form untuk Upload Foto secara terpisah (auto-submit) -->
-                <form action="" method="POST" enctype="multipart/form-data" id="form-upload-foto" style="display:none;">
-                    <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg" onchange="document.getElementById('form-upload-foto').submit();">
-                    <input type="hidden" name="update_foto" value="1">
-                </form>
-
-                <form action="" method="POST">
                     <div class="form-group">
                         <label><i class="fas fa-user-circle" style="margin-right:6px;color:#94a3b8;"></i>Nama Lengkap</label>
                         <input type="text" class="form-control" value="<?php echo htmlspecialchars($guru['nama_lengkap'] ?? ''); ?>" readonly style="background-color: #f3f4f6; cursor: not-allowed;" title="Nama lengkap hanya dapat diubah oleh Administrator">
@@ -343,12 +378,12 @@ if (isset($_POST['update_foto'])) {
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-user" style="margin-right:6px;color:#94a3b8;"></i>Username</label>
-                        <input type="text" name="username" class="form-control" value="<?php echo $user['username'] ?? ''; ?>" required>
+                        <input type="text" name="username" class="form-control" value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>" required>
                     </div>
                     <div class="form-group">
                         <label><i class="fas fa-envelope" style="margin-right:6px;color:#94a3b8;"></i>Email (Untuk Pemulihan Password)</label>
                         <?php if (!empty($user['email'])): ?>
-                            <input type="email" class="form-control" value="<?php echo $user['email']; ?>" readonly style="background-color: #f3f4f6; cursor: not-allowed;" title="Email pemulihan tidak dapat diubah setelah didaftarkan">
+                            <input type="email" class="form-control" value="<?php echo htmlspecialchars($user['email']); ?>" readonly style="background-color: #f3f4f6; cursor: not-allowed;" title="Email pemulihan tidak dapat diubah setelah didaftarkan">
                             <small style="color: #059669; display: block; margin-top: 0.5rem;"><i class="fas fa-check-circle"></i> Email pemulihan telah terdaftar dan tidak dapat diubah.</small>
                         <?php else: ?>
                             <input type="email" name="email" class="form-control" placeholder="Masukkan email aktif" required>
@@ -368,6 +403,52 @@ if (isset($_POST['update_foto'])) {
                 </form>
 
                 <script>
+                    const defaultPhoto = "<?php echo $photo_src; ?>";
+
+                    function previewFoto(input) {
+                        if (input.files && input.files[0]) {
+                            const file = input.files[0];
+                            if (file.size > 10 * 1024 * 1024) {
+                                alert("Ukuran file terlalu besar! Maksimal 10MB.");
+                                input.value = "";
+                                return;
+                            }
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                let img = document.getElementById('preview-avatar-img');
+                                let placeholder = document.getElementById('avatar-placeholder');
+                                if (!img) {
+                                    img = document.createElement('img');
+                                    img.id = 'preview-avatar-img';
+                                    img.style.width = '100%';
+                                    img.style.height = '100%';
+                                    img.style.objectFit = 'cover';
+                                    document.getElementById('avatar-container').prepend(img);
+                                }
+                                img.src = e.target.result;
+                                img.style.display = 'block';
+                                if (placeholder) placeholder.style.display = 'none';
+                                document.getElementById('preview-box').style.display = 'block';
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    }
+
+                    function cancelPreview() {
+                        const input = document.getElementById('foto-upload');
+                        input.value = "";
+                        const img = document.getElementById('preview-avatar-img');
+                        const placeholder = document.getElementById('avatar-placeholder');
+                        if (defaultPhoto) {
+                            if (img) img.src = defaultPhoto;
+                            if (placeholder) placeholder.style.display = 'none';
+                        } else {
+                            if (img) img.style.display = 'none';
+                            if (placeholder) placeholder.style.display = 'flex';
+                        }
+                        document.getElementById('preview-box').style.display = 'none';
+                    }
+
                     const togglePassword = document.querySelector('#togglePassword');
                     const password = document.querySelector('#password_baru');
 

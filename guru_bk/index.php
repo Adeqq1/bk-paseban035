@@ -45,6 +45,17 @@ $query_laporan = mysqli_query($koneksi, "
 // 3. Menghitung total bimbingan atau konseling yang sudah berhasil diselesaikan oleh Guru BK ini
 $query_total_bimbingan = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM konseling WHERE guru_id = '$guru_id'");
 $total_bimbingan = mysqli_fetch_assoc($query_total_bimbingan)['total'];
+
+// 4. Mengambil data foto Guru BK secara real-time dari database
+$user_id = $_SESSION['id'];
+$query_user = mysqli_query($koneksi, "SELECT foto FROM user WHERE id='$user_id'");
+$user_row = mysqli_fetch_assoc($query_user);
+$foto_guru = $user_row['foto'] ?? $_SESSION['foto'] ?? '';
+$foto_guru_exists = !empty($foto_guru) && file_exists(__DIR__ . '/../assets/uploads/profil/' . $foto_guru);
+if ($foto_guru_exists) {
+    $_SESSION['foto'] = $foto_guru;
+}
+$foto_guru_url = $foto_guru_exists ? '../assets/uploads/profil/' . htmlspecialchars($foto_guru) : '';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -83,9 +94,9 @@ $total_bimbingan = mysqli_fetch_assoc($query_total_bimbingan)['total'];
         <div class="sidebar-footer">
             <div class="avatar">
                 <!-- Mengecek apakah pengguna memiliki foto profil yang tersimpan di sistem -->
-                <?php if (!empty($_SESSION['foto']) && file_exists('../assets/uploads/profil/' . $_SESSION['foto'])): ?>
+                <?php if ($foto_guru_exists): ?>
                     <!-- Jika ada, tampilkan foto profil tersebut -->
-                    <img src="../assets/uploads/profil/<?php echo $_SESSION['foto']; ?>" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
+                    <img src="<?php echo $foto_guru_url; ?>" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
                 <?php else: ?>
                     <!-- Jika tidak ada foto, tampilkan inisial (huruf pertama) dari nama pengguna -->
                     <?php echo strtoupper(substr($guru['nama_lengkap'] ?? $_SESSION['username'] ?? 'B', 0, 1)); ?>
@@ -99,24 +110,31 @@ $total_bimbingan = mysqli_fetch_assoc($query_total_bimbingan)['total'];
             </div>
         </div>
     </div>
-        </div>
-    </div>
 
     <div class="main-content">
         <div class="header" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 2rem; border-radius: 16px; margin-bottom: 2rem; color: white; display: flex; align-items: center; gap: 1.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
             <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(96,165,250,0.12) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none;"></div>
             <div style="display: flex; align-items: center; gap: 1.5rem; width: 100%;">
-                <div style="background: rgba(255,255,255,0.06); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
-                    <i class="fas fa-hand-sparkles" style="font-size: 1.8rem; color: #60a5fa;"></i>
+                <!-- Preview Foto Profil di Header Dashboard -->
+                <div style="width: 65px; height: 65px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.25); overflow: hidden; background: rgba(255,255,255,0.08);">
+                    <?php if ($foto_guru_exists): ?>
+                        <img src="<?php echo $foto_guru_url; ?>" alt="Foto Profil" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php else: ?>
+                        <i class="fas fa-hand-sparkles" style="font-size: 1.8rem; color: #60a5fa;"></i>
+                    <?php endif; ?>
                 </div>
                 <div style="flex: 1; min-width: 0;">
                     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; width: 100%;">
                         <h1 style="margin: 0; font-size: 1.6rem; font-weight: 800; color: white; letter-spacing: -0.01em;">Halo, Guru BK <span style="color: #60a5fa;"><?php echo htmlspecialchars($guru['nama_lengkap']); ?></span></h1>
                         <div style="background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 8px; color: #cbd5e1; backdrop-filter: blur(8px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                            <span style="position: relative; display: flex; height: 8px; width: 8px;">
-                                <span style="position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #22c55e; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-                                <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #22c55e;"></span>
-                            </span>
+                            <?php if ($foto_guru_exists): ?>
+                                <img src="<?php echo $foto_guru_url; ?>" alt="Foto" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255,255,255,0.4);">
+                            <?php else: ?>
+                                <span style="position: relative; display: flex; height: 8px; width: 8px;">
+                                    <span style="position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #22c55e; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                                    <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #22c55e;"></span>
+                                </span>
+                            <?php endif; ?>
                             <span style="color: white; font-weight: 700;">Konselor Aktif</span>
                         </div>
                     </div>

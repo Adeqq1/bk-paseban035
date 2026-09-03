@@ -1,8 +1,9 @@
 <?php
 // =========================================================================
-// 1. LOAD ENVIRONMENT VARIABLES (.env) JIKA ADA
+// 1. BACA .env (JIKA ADA)
 // =========================================================================
 $env_file = __DIR__ . '/../.env';
+$env_vars = [];
 if (file_exists($env_file)) {
     $env_lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($env_lines as $line) {
@@ -10,48 +11,61 @@ if (file_exists($env_file)) {
         if ($line === '' || strpos($line, '#') === 0) continue;
         if (strpos($line, '=') !== false) {
             list($name, $value) = explode('=', $line, 2);
-            $name = trim($name);
-            $value = trim($value, " \t\n\r\0\x0B\"'");
-            putenv("{$name}={$value}");
-            $_ENV[$name] = $value;
-            $_SERVER[$name] = $value;
+            $env_vars[trim($name)] = trim($value, " \t\n\r\0\x0B\"'");
         }
     }
 }
 
-// =========================================================================
-// 2. DETEKSI LINGKUNGAN (DOCKER / PRODUCTION VS LOCAL XAMPP / LARAGON)
-// =========================================================================
-$db_host_env = getenv('DB_HOST') ?: ($_ENV['DB_HOST'] ?? ($_SERVER['DB_HOST'] ?? null));
+// Helper untuk mengambil config
+$get_cfg = function($key, $default = null) use ($env_vars) {
+    if (isset($env_vars[$key]) && $env_vars[$key] !== '') {
+        return $env_vars[$key];
+    }
+    $val = getenv($key);
+    if ($val !== false && $val !== '') {
+        return $val;
+    }
+    return $default;
+};
 
-if ($db_host_env === 'mysql_shared' || ($db_host_env && !in_array($db_host_env, ['localhost', '127.0.0.1']))) {
-    // Lingkungan Docker Server / Production
-    $host = $db_host_env;
-    $user = getenv('DB_USERNAME') ?: ($_ENV['DB_USERNAME'] ?? ($_SERVER['DB_USERNAME'] ?? "app2_user"));
-    $pass = getenv('DB_PASSWORD') ?: ($_ENV['DB_PASSWORD'] ?? ($_SERVER['DB_PASSWORD'] ?? "App2_Secr3t_P@ss2026!"));
-    $db   = getenv('DB_DATABASE') ?: ($_ENV['DB_DATABASE'] ?? ($_SERVER['DB_DATABASE'] ?? "db_bk7"));
+// =========================================================================
+// 2. DETEKSI OTOMATIS HOST DOCKER VS LOCALHOST
+// =========================================================================
+$is_docker = (gethostbyname('mysql_shared') !== 'mysql_shared');
+
+if ($is_docker) {
+    // Lingkungan Docker Server (VPS)
+    $host = 'mysql_shared';
+    $user = $get_cfg('DB_USERNAME', 'app2_user');
+    // Jika env_vars DB_USERNAME adalah 'root' dari template lokal, gunakan user docker 'app2_user'
+    if ($user === 'root') $user = 'app2_user';
+    $pass = $get_cfg('DB_PASSWORD', 'App2_Secr3t_P@ss2026!');
+    if ($pass === '' || $pass === null) $pass = 'App2_Secr3t_P@ss2026!';
+    $db   = $get_cfg('DB_DATABASE', 'db_bk7');
 } else {
-    // Lingkungan Pengembangan Lokal (XAMPP / Laragon / WampServer)
-    $host = $db_host_env ?: "localhost";
-    $user = getenv('DB_USERNAME') ?: ($_ENV['DB_USERNAME'] ?? ($_SERVER['DB_USERNAME'] ?? "root"));
-    $pass = getenv('DB_PASSWORD') !== false && getenv('DB_PASSWORD') !== null ? getenv('DB_PASSWORD') : ($_ENV['DB_PASSWORD'] ?? ($_SERVER['DB_PASSWORD'] ?? ""));
-    $db   = getenv('DB_DATABASE') ?: ($_ENV['DB_DATABASE'] ?? ($_SERVER['DB_DATABASE'] ?? "db_bk7"));
+    // Lingkungan Lokal (XAMPP / Laragon / WAMP)
+    $host = $get_cfg('DB_HOST', 'localhost');
+    $user = $get_cfg('DB_USERNAME', 'root');
+    $pass = $get_cfg('DB_PASSWORD', '');
+    $db   = $get_cfg('DB_DATABASE', 'db_bk7');
 }
 
 // =========================================================================
-// 3. KONEKSI KE DATABASE SERVER MYSQL
+// 3. KONEKSI KE DATABASE
 // =========================================================================
-try {
+mysqli_report(MYSQLI_REPORT_OFF); // Matikan unhandled fatal error agar bisa ditangani manual
+
+$koneksi = @mysqli_connect($host, $user, $pass, $db);
+
+// Jika gagal di lokal dengan host 'localhost', coba dengan '127.0.0.1'
+if (!$koneksi && !$is_docker && $host === 'localhost') {
+    $host = '127.0.0.1';
     $koneksi = @mysqli_connect($host, $user, $pass, $db);
-} catch (Throwable $e) {
-    $koneksi = false;
 }
 
-// Jika koneksi gagal, berikan instruksi bantuan yang jelas untuk developer
+// Jika tetap gagal, tampilkan pesan error ramah
 if (!$koneksi) {
-    $err_msg = mysqli_connect_error() ?: "Tidak dapat terhubung ke database server ($host).";
-    
-    // Tampilan pesan error yang informatif dan ramah pengguna lokal XAMPP
+    $err_msg = mysqli_connect_error() ?: "Koneksi database gagal ke ($host).";
     echo '<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -88,6 +102,9 @@ if (!$koneksi) {
 </html>';
     exit();
 }
+
+// Aktifkan kembali reporting
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 // Set charset & konfigurasi sql_mode agar kompatibel dengan MySQL 8 / MariaDB
 mysqli_set_charset($koneksi, "utf8mb4");

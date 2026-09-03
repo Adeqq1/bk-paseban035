@@ -54,7 +54,7 @@ if ($user) {
         $_SESSION['id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['role'] = $user['role'];
-        $_SESSION['foto'] = $user['foto'] ?? null;
+        $user_foto = $user['foto'] ?? null;
 
         // Simpan nama_lengkap di session agar selalu tampil nama bukannya NIP/username
         if ($user['role'] == 'guru_bk' || $user['role'] == 'wali_kelas') {
@@ -63,11 +63,15 @@ if ($user) {
                 $_SESSION['nama_lengkap'] = $d_g['nama_lengkap'];
             }
         } elseif ($user['role'] == 'siswa') {
-            $q_s = mysqli_query($koneksi, "SELECT nama_lengkap FROM siswa WHERE user_id = '{$user['id']}' OR id = '{$user['id']}'");
+            $q_s = mysqli_query($koneksi, "SELECT nama_lengkap, foto FROM siswa WHERE user_id = '{$user['id']}' OR id = '{$user['id']}'");
             if ($d_s = mysqli_fetch_assoc($q_s)) {
                 $_SESSION['nama_lengkap'] = $d_s['nama_lengkap'];
+                if (empty($user_foto) && !empty($d_s['foto'])) {
+                    $user_foto = $d_s['foto'];
+                }
             }
-        } // Mengisi dengan null jika foto tidak diatur
+        }
+        $_SESSION['foto'] = $user_foto;
 
         // 9. Mengarahkan halaman dashboard pengguna berdasarkan Hak Akses (Role) masing-masing
         if ($user['role'] == 'admin') {

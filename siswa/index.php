@@ -14,13 +14,20 @@ $user_id = $_SESSION['id'];
 
 // Mengambil data siswa, nama kelas, dan foto profil dari database
 $query_siswa = mysqli_query($koneksi, "
-    SELECT s.*, k.nama_kelas 
+    SELECT s.*, k.nama_kelas, u.foto as user_foto 
     FROM siswa s 
     LEFT JOIN kelas k ON s.kelas_id = k.id 
+    LEFT JOIN user u ON s.user_id = u.id
     WHERE s.user_id = '$user_id'
 ");
 $siswa = mysqli_fetch_assoc($query_siswa);
 $siswa_id = $siswa['id'];
+$foto_siswa = !empty($siswa['foto']) ? $siswa['foto'] : ($siswa['user_foto'] ?? '');
+$foto_siswa_exists = !empty($foto_siswa) && file_exists(__DIR__ . '/../assets/uploads/profil/' . $foto_siswa);
+if ($foto_siswa_exists) {
+    $_SESSION['foto'] = $foto_siswa;
+}
+$foto_siswa_url = $foto_siswa_exists ? '../assets/uploads/profil/' . htmlspecialchars($foto_siswa) : '';
 
 // Menghitung akumulasi poin pelanggaran semester ini
 $current_semester = date('m') >= 7 ? '1' : '2';
@@ -86,15 +93,15 @@ $total_poin = mysqli_fetch_assoc($query_poin)['total'] ?? 0;
         <!-- Footer Sidebar (Foto & Info Siswa Aktif) -->
         <!-- Bagian Bawah Sidebar (Menampilkan Profil Pengguna yang Sedang Login) -->
         <div class="sidebar-footer">
-            <?php if(!empty($siswa['foto']) && file_exists('../assets/uploads/profil/' . $siswa['foto'])): ?>
+            <?php if ($foto_siswa_exists): ?>
                 <!-- Jika ada, tampilkan foto profil tersebut -->
-                <img src="../assets/uploads/profil/<?php echo $siswa['foto']; ?>" alt="Foto Profil" class="avatar" style="object-fit: cover;">
+                <img src="<?php echo $foto_siswa_url; ?>" alt="Foto Profil" class="avatar" style="object-fit: cover;">
             <?php else: ?>
-                <div class="avatar"><?php echo strtoupper(substr($siswa['nama_lengkap'], 0, 1)); ?></div>
+                <div class="avatar"><?php echo strtoupper(substr($siswa['nama_lengkap'] ?? 'S', 0, 1)); ?></div>
             <?php endif; ?>
             <div>
                 <!-- Menampilkan nama lengkap pengguna -->
-                <div class="user-name"><?php echo htmlspecialchars(ucwords(strtolower($siswa['nama_lengkap']))); ?></div>
+                <div class="user-name"><?php echo htmlspecialchars(ucwords(strtolower($siswa['nama_lengkap'] ?? 'Siswa'))); ?></div>
                 <!-- Menampilkan peran/jabatan pengguna -->
                 <div class="user-role">Siswa SMAN 7</div>
             </div>
@@ -106,17 +113,26 @@ $total_poin = mysqli_fetch_assoc($query_poin)['total'] ?? 0;
         <!-- Header Halaman -->
         <div class="header" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 2rem; border-radius: 12px; margin-bottom: 2rem; color: white; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div style="background: rgba(255,255,255,0.1); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-hand-sparkles" style="font-size: 1.8rem; color: #60a5fa;"></i>
+                <!-- Preview Foto Profil di Header Dashboard Siswa -->
+                <div style="width: 64px; height: 64px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; backdrop-filter: blur(4px); border: 2px solid rgba(255,255,255,0.18); box-shadow: 0 4px 12px rgba(0,0,0,0.25); overflow: hidden; background: rgba(255,255,255,0.1);">
+                    <?php if ($foto_siswa_exists): ?>
+                        <img src="<?php echo $foto_siswa_url; ?>" alt="Foto Profil" style="width: 100%; height: 100%; object-fit: cover;">
+                    <?php else: ?>
+                        <i class="fas fa-hand-sparkles" style="font-size: 1.8rem; color: #60a5fa;"></i>
+                    <?php endif; ?>
                 </div>
                 <div>
-                    <h1 style="margin: 0 0 8px 0; font-size: 1.6rem; font-weight: 700; color: white; letter-spacing: 0.025em;">Halo, <?php echo htmlspecialchars(ucwords(strtolower(explode(' ', $siswa['nama_lengkap'])[0]))); ?></h1>
+                    <h1 style="margin: 0 0 8px 0; font-size: 1.6rem; font-weight: 700; color: white; letter-spacing: 0.025em;">Halo, <?php echo htmlspecialchars(ucwords(strtolower(explode(' ', $siswa['nama_lengkap'] ?? 'Siswa')[0]))); ?></h1>
                     <p style="margin: 0; color: #cbd5e1; font-size: 0.95rem;">Selamat datang di portal Bimbingan Konseling SMAN 7 Bungo.</p>
                 </div>
             </div>
-            <div class="user-info" style="background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.1);">
-                <i class="fas fa-circle" style="color: #4ade80; font-size: 0.5rem; margin-right: 6px;"></i>
-                Status: <strong style="color: white;">Siswa Aktif</strong>
+            <div class="user-info" style="background: rgba(0,0,0,0.2); padding: 8px 18px; border-radius: 30px; font-weight: 600; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 8px;">
+                <?php if ($foto_siswa_exists): ?>
+                    <img src="<?php echo $foto_siswa_url; ?>" alt="Foto" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255,255,255,0.4);">
+                <?php else: ?>
+                    <i class="fas fa-circle" style="color: #4ade80; font-size: 0.5rem;"></i>
+                <?php endif; ?>
+                <span>Status: <strong style="color: white;">Siswa Aktif</strong></span>
             </div>
         </div>
 

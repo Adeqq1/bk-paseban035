@@ -41,62 +41,73 @@ if (isset($_POST['update_profil'])) {
     }
 }
 
+// Helper fungsi upload foto profil Siswa yang aman dan reliabel
+function uploadFotoProfilSiswa($file, $user_id, $siswa_id, $koneksi, $foto_lama = '') {
+    $allowed = array('jpg', 'jpeg', 'png', 'webp');
+    $filename = $file['name'];
+    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+    
+    if (!in_array($ext, $allowed)) {
+        return ['success' => false, 'code' => 'error_ext'];
+    }
+    if ($file['size'] > 10 * 1024 * 1024) {
+        return ['success' => false, 'code' => 'error_size'];
+    }
+    if (!@getimagesize($file['tmp_name'])) {
+        return ['success' => false, 'code' => 'error_invalid'];
+    }
+    
+    $upload_dir = __DIR__ . '/../assets/uploads/profil/';
+    if (!file_exists($upload_dir)) {
+        mkdir($upload_dir, 0775, true);
+    }
+    
+    $new_filename = 'siswa_' . $siswa_id . '_' . time() . '.' . $ext;
+    $destination = $upload_dir . $new_filename;
+    
+    // Bersihkan file lama untuk siswa ini
+    $old_files = glob($upload_dir . 'siswa_' . $siswa_id . '_*.*');
+    if ($old_files) {
+        foreach ($old_files as $f) {
+            if (is_file($f)) {
+                @unlink($f);
+            }
+        }
+    }
+    $old_files_user = glob($upload_dir . 'siswa_' . $user_id . '_*.*');
+    if ($old_files_user) {
+        foreach ($old_files_user as $f) {
+            if (is_file($f)) {
+                @unlink($f);
+            }
+        }
+    }
+    
+    if (move_uploaded_file($file['tmp_name'], $destination)) {
+        @chmod($destination, 0664);
+        if (!empty($foto_lama) && file_exists($upload_dir . $foto_lama) && $foto_lama !== $new_filename) {
+            @unlink($upload_dir . $foto_lama);
+        }
+        
+        mysqli_query($koneksi, "UPDATE siswa SET foto='$new_filename' WHERE user_id='$user_id'");
+        mysqli_query($koneksi, "UPDATE user SET foto='$new_filename' WHERE id='$user_id'");
+        $_SESSION['foto'] = $new_filename;
+        return ['success' => true, 'filename' => $new_filename];
+    } else {
+        return ['success' => false, 'code' => 'error_upload'];
+    }
+}
+
 // Proses Update Foto Profil
 if (isset($_POST['update_foto'])) {
-    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-        $allowed = array('jpg', 'jpeg', 'png');
-        $filename = $_FILES['foto']['name'];
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        
-        if (!in_array($ext, $allowed)) {
-            $msg = "error_ext";
-        } elseif ($_FILES['foto']['size'] > 5 * 1024 * 1024) {
-            $msg = "error_size";
-        } elseif (!@getimagesize($_FILES['foto']['tmp_name'])) {
-            $msg = "error_invalid";
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] === UPLOAD_ERR_OK) {
+        $res = uploadFotoProfilSiswa($_FILES['foto'], $user_id, $siswa['id'], $koneksi, $siswa['foto'] ?? '');
+        if ($res['success']) {
+            $msg = "success_foto";
+            $query_siswa = mysqli_query($koneksi, "SELECT s.*, k.nama_kelas, u.username, u.email FROM siswa s LEFT JOIN kelas k ON s.kelas_id = k.id JOIN user u ON s.user_id = u.id WHERE s.user_id = '$user_id'");
+            $siswa = mysqli_fetch_assoc($query_siswa);
         } else {
-            $new_filename = 'siswa_' . $siswa['id'] . '_' . time() . '.' . $ext;
-            $destination = '../assets/uploads/profil/' . $new_filename;
-            
-            if (!file_exists('../assets/uploads/profil')) {
-                mkdir('../assets/uploads/profil', 0777, true);
-            }
-            
-            // Bersihkan file yatim/orphan akibat reset database
-            $old_files = glob('../assets/uploads/profil/' . 'siswa_' . $siswa['id'] . '_*.*');
-            if ($old_files) {
-                foreach ($old_files as $f) {
-                    if (is_file($f)) {
-                        unlink($f);
-                    }
-                }
-            }
-            $old_files_user = glob('../assets/uploads/profil/' . 'siswa_' . $user_id . '_*.*');
-            if ($old_files_user) {
-                foreach ($old_files_user as $f) {
-                    if (is_file($f)) {
-                        unlink($f);
-                    }
-                }
-            }
-            
-            if (move_uploaded_file($_FILES['foto']['tmp_name'], $destination)) {
-                // Hapus foto lama jika ada
-                if (!empty($siswa['foto']) && file_exists('../assets/uploads/profil/' . $siswa['foto'])) {
-                    unlink('../assets/uploads/profil/' . $siswa['foto']);
-                }
-                
-                mysqli_query($koneksi, "UPDATE siswa SET foto='$new_filename' WHERE user_id='$user_id'");
-                mysqli_query($koneksi, "UPDATE user SET foto='$new_filename' WHERE id='$user_id'");
-                $_SESSION['foto'] = $new_filename;
-                $msg = "success_foto";
-                
-                // Refresh data
-                $query_siswa = mysqli_query($koneksi, "SELECT s.*, k.nama_kelas, u.username, u.email FROM siswa s LEFT JOIN kelas k ON s.kelas_id = k.id JOIN user u ON s.user_id = u.id WHERE s.user_id = '$user_id'");
-                $siswa = mysqli_fetch_assoc($query_siswa);
-            } else {
-                $msg = "error_upload";
-            }
+            $msg = $res['code'];
         }
     } else {
         $msg = "error_upload";
@@ -349,36 +360,60 @@ if (isset($_POST['update_password'])) {
 
         <div class="profile-container" style="max-width: 600px; margin: 0 auto; display: block;">
             <div class="form-card">
+                <?php
+                $has_photo = !empty($siswa['foto']) && file_exists(__DIR__ . '/../assets/uploads/profil/' . $siswa['foto']);
+                $photo_src = $has_photo ? '../assets/uploads/profil/' . htmlspecialchars($siswa['foto']) : '';
+                ?>
                 <!-- HEADER FOTO -->
-                <div class="form-card-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
-                    <div class="profile-avatar-container" style="width: 110px; height: 110px; border-radius: 50%; position: relative; cursor: pointer; overflow: hidden; border: 4px solid #ffffff; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <?php if (!empty($siswa['foto']) && file_exists('../assets/uploads/profil/' . $siswa['foto'])): ?>
-                            <!-- Jika ada, tampilkan foto profil tersebut -->
-                            <img src="../assets/uploads/profil/<?php echo $siswa['foto']; ?>" alt="Foto Profil" style="width: 100%; height: 100%; object-fit: cover;">
-                        <?php else: ?>
-                            <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #3b82f6, #10b981); color: white; font-size: 2.5rem;">
-                                <!-- Jika tidak ada foto, tampilkan inisial (huruf pertama) dari nama pengguna -->
-                                <?php echo strtoupper(substr($siswa['nama_lengkap'], 0, 1)); ?>
+                <form action="" method="POST" enctype="multipart/form-data" id="form-upload-foto">
+                    <input type="hidden" name="update_foto" value="1">
+                    <div class="form-card-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.75rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+                        <div class="profile-avatar-container" id="avatar-container" onclick="document.getElementById('foto-upload').click();" style="width: 110px; height: 110px; border-radius: 50%; position: relative; cursor: pointer; overflow: hidden; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                            <?php if ($has_photo): ?>
+                                <img id="preview-avatar-img" src="<?php echo $photo_src; ?>" alt="Foto Profil" style="width: 100%; height: 100%; object-fit: cover;">
+                            <?php else: ?>
+                                <div id="avatar-placeholder" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #3b82f6, #10b981); color: white; font-size: 2.5rem;">
+                                    <?php echo strtoupper(substr($siswa['nama_lengkap'] ?? 'S', 0, 1)); ?>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <!-- Upload Overlay -->
+                            <div class="profile-avatar-overlay" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px;">
+                                <i class="fas fa-camera" style="font-size: 1.2rem; margin: 0; line-height: 1;"></i>
+                                <span style="font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; display: block; white-space: nowrap; font-family: sans-serif;">Ubah Foto</span>
                             </div>
-                        <?php endif; ?>
-                        
-                        <!-- Upload Overlay -->
-                        <div class="profile-avatar-overlay" onclick="document.getElementById('foto-upload').click();" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px;">
-                            <i class="fas fa-camera" style="font-size: 1.2rem; margin: 0; line-height: 1;"></i>
-                            <span style="font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; display: block; white-space: nowrap; font-family: sans-serif;">Ubah Foto</span>
+                        </div>
+
+                        <!-- Tombol Pilih Foto Langsung (Terlihat jelas di Mobile & Desktop) -->
+                        <button type="button" class="btn-change-photo" onclick="document.getElementById('foto-upload').click();" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                            <i class="fas fa-camera"></i> Pilih / Ubah Foto
+                        </button>
+
+                        <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg, image/webp" style="display:none;" onchange="previewFoto(this);">
+
+                        <!-- Panel Aksi Preview Foto Baru -->
+                        <div id="preview-box" style="display:none; width: 100%; max-width: 420px; margin-top: 5px;">
+                            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; text-align: center;">
+                                <div style="color: #065f46; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
+                                    <i class="fas fa-eye"></i> Preview Foto Baru Terpilih
+                                </div>
+                                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                                    <button type="submit" style="background: #10b981; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-upload"></i> Simpan Foto Profil
+                                    </button>
+                                    <button type="button" onclick="cancelPreview()" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer;">
+                                        <i class="fas fa-times"></i> Batal
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div style="font-weight:700;font-size:1.2rem;color:#0f172a;"><?php echo htmlspecialchars(ucwords(strtolower($siswa['nama_lengkap']))); ?></div>
+                            <div style="font-size:0.85rem;color:#64748b;margin-top:2px;">Siswa Aktif SMAN 7 Bungo</div>
                         </div>
                     </div>
-                    <div>
-                        <div style="font-weight:700;font-size:1.2rem;color:#0f172a;"><?php echo htmlspecialchars(ucwords(strtolower($siswa['nama_lengkap']))); ?></div>
-                        <div style="font-size:0.85rem;color:#64748b;margin-top:2px;">Siswa Aktif SMAN 7 Bungo</div>
-                    </div>
-                    
-                    <!-- Form Upload Foto (tersembunyi, auto-submit saat file dipilih) -->
-                    <form action="" method="POST" enctype="multipart/form-data" id="form-upload-foto" style="display:none;">
-                        <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg" onchange="document.getElementById('form-upload-foto').submit();">
-                        <input type="hidden" name="update_foto" value="1">
-                    </form>
-                </div>
+                </form>
 
                 <!-- FORM KELENGKAPAN DATA DIRI -->
                 <div class="form-section" style="margin-bottom: 2rem;">
@@ -468,29 +503,50 @@ if (isset($_POST['update_password'])) {
     </div>
 
     <script>
-        // Fungsi preview foto sebelum upload
+        const defaultPhoto = "<?php echo $photo_src; ?>";
+
         function previewFoto(input) {
-            var preview = document.getElementById('foto-preview');
-            var placeholder = document.getElementById('foto-placeholder');
-            var btnSubmit = document.getElementById('btn-submit-foto');
-
             if (input.files && input.files[0]) {
-                var reader = new FileReader();
+                const file = input.files[0];
+                if (file.size > 10 * 1024 * 1024) {
+                    alert("Ukuran file terlalu besar! Maksimal 10MB.");
+                    input.value = "";
+                    return;
+                }
+                const reader = new FileReader();
                 reader.onload = function(e) {
-                    // Tampilkan preview foto yang dipilih
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    
-                    // Sembunyikan placeholder ikon jika ada
-                    if (placeholder) {
-                        placeholder.style.display = 'none';
+                    let img = document.getElementById('preview-avatar-img');
+                    let placeholder = document.getElementById('avatar-placeholder');
+                    if (!img) {
+                        img = document.createElement('img');
+                        img.id = 'preview-avatar-img';
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.objectFit = 'cover';
+                        document.getElementById('avatar-container').prepend(img);
                     }
-
-                    // Tampilkan tombol Simpan Foto
-                    btnSubmit.style.display = 'inline-block';
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    if (placeholder) placeholder.style.display = 'none';
+                    document.getElementById('preview-box').style.display = 'block';
                 };
-                reader.readAsDataURL(input.files[0]);
+                reader.readAsDataURL(file);
             }
+        }
+
+        function cancelPreview() {
+            const input = document.getElementById('foto-upload');
+            input.value = "";
+            const img = document.getElementById('preview-avatar-img');
+            const placeholder = document.getElementById('avatar-placeholder');
+            if (defaultPhoto) {
+                if (img) img.src = defaultPhoto;
+                if (placeholder) placeholder.style.display = 'none';
+            } else {
+                if (img) img.style.display = 'none';
+                if (placeholder) placeholder.style.display = 'flex';
+            }
+            document.getElementById('preview-box').style.display = 'none';
         }
     </script>
 
