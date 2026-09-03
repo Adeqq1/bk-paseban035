@@ -132,4 +132,46 @@ if (!function_exists('tgl_indo')) {
         return $pecahkan[2] . ' ' . $bulan[ (int)$pecahkan[1] ] . ' ' . $pecahkan[0];
     }
 }
+
+// =========================================================================
+// 4. SINKRONISASI REAL-TIME FOTO PROFIL UNTUK SEMUA HALAMAN (SIDEBAR KIRI BAWAH)
+// =========================================================================
+if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['id'])) {
+    $auth_uid = (int)$_SESSION['id'];
+    $profil_upload_dir = __DIR__ . '/../assets/uploads/profil/';
+    
+    // Ambil data foto user langsung dari database secara real-time
+    $q_sync_foto = mysqli_query($koneksi, "
+        SELECT u.foto as user_foto, s.foto as siswa_foto 
+        FROM user u 
+        LEFT JOIN siswa s ON u.id = s.user_id 
+        WHERE u.id = '$auth_uid'
+    ");
+    if ($q_sync_foto && ($row_sync = mysqli_fetch_assoc($q_sync_foto))) {
+        $foto_terbaru = !empty($row_sync['user_foto']) ? $row_sync['user_foto'] : ($row_sync['siswa_foto'] ?? '');
+        $_SESSION['foto'] = $foto_terbaru;
+    }
+
+    if (!empty($_SESSION['foto']) && file_exists($profil_upload_dir . $_SESSION['foto'])) {
+        $GLOBALS['foto_sidebar_url'] = '../assets/uploads/profil/' . htmlspecialchars($_SESSION['foto']);
+        $GLOBALS['foto_sidebar_ada'] = true;
+    } else {
+        $GLOBALS['foto_sidebar_url'] = '';
+        $GLOBALS['foto_sidebar_ada'] = false;
+    }
+}
+
+// Helper function untuk merender foto profil sidebar di halaman manapun
+if (!function_exists('render_sidebar_avatar')) {
+    function render_sidebar_avatar($nama_pengguna = '', $default_char = 'A') {
+        $foto = $_SESSION['foto'] ?? '';
+        $upload_dir = __DIR__ . '/../assets/uploads/profil/';
+        if (!empty($foto) && file_exists($upload_dir . $foto)) {
+            $src = '../assets/uploads/profil/' . htmlspecialchars($foto);
+            return '<img src="' . $src . '" style="width:100%; height:100%; object-fit:cover; border-radius:10px;" alt="Foto Profil">';
+        }
+        $char = !empty($nama_pengguna) ? strtoupper(substr(trim($nama_pengguna), 0, 1)) : $default_char;
+        return htmlspecialchars($char);
+    }
+}
 ?>

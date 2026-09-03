@@ -168,12 +168,9 @@ $query_bimbingan = mysqli_query($koneksi, "
         <!-- Footer Sidebar Profil Siswa Aktif -->
         <!-- Bagian Bawah Sidebar (Menampilkan Profil Pengguna yang Sedang Login) -->
         <div class="sidebar-footer">
-            <?php if(!empty($siswa['foto']) && file_exists('../assets/uploads/profil/' . $siswa['foto'])): ?>
-                <!-- Jika ada, tampilkan foto profil tersebut -->
-                <img src="../assets/uploads/profil/<?php echo $siswa['foto']; ?>" alt="Foto Profil" class="avatar" style="object-fit: cover;">
-            <?php else: ?>
-                <div class="avatar"><?php echo strtoupper(substr($siswa['nama_lengkap'], 0, 1)); ?></div>
-            <?php endif; ?>
+            <div class="avatar">
+                <?php echo render_sidebar_avatar($siswa['nama_lengkap'] ?? 'Siswa', 'S'); ?>
+            </div>
             <div>
                 <!-- Menampilkan nama lengkap pengguna -->
                 <div class="user-name"><?php echo htmlspecialchars(ucwords(strtolower($siswa['nama_lengkap']))); ?></div>

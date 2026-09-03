@@ -244,13 +244,7 @@ if (isset($_POST['update_foto'])) {
         <!-- Bagian Bawah Sidebar (Menampilkan Profil Pengguna yang Sedang Login) -->
         <div class="sidebar-footer">
             <div class="avatar">
-                <?php if (!empty($admin['foto'])): ?>
-                    <!-- Jika ada, tampilkan foto profil tersebut -->
-                    <img src="../assets/uploads/profil/<?php echo $admin['foto']; ?>" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
-                <?php else: ?>
-                    <!-- Jika tidak ada foto, tampilkan inisial (huruf pertama) dari nama pengguna -->
-                    <?php echo strtoupper(substr($admin['username'], 0, 1)); ?>
-                <?php endif; ?>
+                <?php echo render_sidebar_avatar($admin['username'] ?? 'Admin', 'A'); ?>
             </div>
             <div>
                 <!-- Menampilkan nama lengkap pengguna -->

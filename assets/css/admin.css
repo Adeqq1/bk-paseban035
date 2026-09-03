@@ -429,20 +429,29 @@ body::after {
 
 /* Avatar (foto profil kecil / huruf inisial) di footer sidebar */
 .sidebar-footer .avatar {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 10px;
     background: linear-gradient(135deg, var(--primary), var(--accent));
     /* Gradasi: Biru SMA → Emas SMA */
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: white;
     flex-shrink: 0;
     /* Mencegah avatar menyusut saat ruang sempit */
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-footer .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 /* Nama pengguna yang sedang login */

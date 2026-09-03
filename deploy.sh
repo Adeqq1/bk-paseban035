@@ -14,10 +14,11 @@ echo "========================================="
 
 if [ -d "$APP_TARGET_DIR" ]; then
     echo "[1/3] Menyalin file dari $PROJECT_DIR ke $APP_TARGET_DIR..."
-    rsync -av --delete \
+    rsync -av \
         --exclude '.git' \
         --exclude '.env' \
         --exclude 'node_modules' \
+        --exclude 'assets/uploads/profil/*' \
         "$PROJECT_DIR/" "$APP_TARGET_DIR/"
     
     echo "[2/3] Menjalankan deploy server..."

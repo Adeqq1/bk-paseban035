@@ -164,14 +164,7 @@ $query_guru = mysqli_query($koneksi, "SELECT * FROM guru $where_sql ORDER BY id 
         <!-- Bagian Bawah Sidebar (Menampilkan Profil Pengguna yang Sedang Login) -->
         <div class="sidebar-footer">
             <div class="avatar">
-                <!-- Mengecek apakah pengguna memiliki foto profil yang tersimpan di sistem -->
-                <?php if (!empty($_SESSION['foto']) && file_exists('../assets/uploads/profil/' . $_SESSION['foto'])): ?>
-                    <!-- Jika ada, tampilkan foto profil tersebut -->
-                    <img src="../assets/uploads/profil/<?php echo $_SESSION['foto']; ?>" style="width:100%; height:100%; object-fit:cover; border-radius:10px;">
-                <?php else: ?>
-                    <!-- Jika tidak ada foto, tampilkan inisial (huruf pertama) dari nama pengguna -->
-                    <?php echo strtoupper(substr($_SESSION['username'], 0, 1)); ?>
-                <?php endif; ?>
+                <?php echo render_sidebar_avatar($_SESSION['username'] ?? 'Admin', 'A'); ?>
             </div>
             <div>
                 <!-- Menampilkan nama lengkap pengguna -->
