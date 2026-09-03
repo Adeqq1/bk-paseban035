@@ -197,13 +197,8 @@ if ($kelas) {
         <div class="header" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); padding: 2rem; border-radius: 14px; margin-bottom: 2rem; color: white; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; box-shadow: 0 10px 20px -5px rgba(15, 23, 42, 0.25);">
             
             <div style="display: flex; align-items: center; gap: 1.5rem; flex: 1; min-width: 280px;">
-                <!-- Preview Foto Profil di Header Dashboard -->
-                <div style="width: 64px; height: 64px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; backdrop-filter: blur(4px); border: 2px solid rgba(255,255,255,0.18); box-shadow: 0 4px 12px rgba(0,0,0,0.25); overflow: hidden; background: rgba(255,255,255,0.1);">
-                    <?php if ($foto_wk_exists): ?>
-                        <img src="<?php echo $foto_wk_url; ?>" alt="Foto Profil" style="width: 100%; height: 100%; object-fit: cover;">
-                    <?php else: ?>
-                        <i class="fas fa-chalkboard-teacher" style="font-size: 1.9rem; color: #60a5fa;"></i>
-                    <?php endif; ?>
+                <div style="width: 60px; height: 60px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 4px rgba(255,255,255,0.05);">
+                    <i class="fas fa-chalkboard-teacher" style="font-size: 1.8rem; color: #60a5fa;"></i>
                 </div>
                 
                 <div>
@@ -222,11 +217,7 @@ if ($kelas) {
             <!-- Badge Status Wali Kelas -->
             <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
                 <div style="background: rgba(255,255,255,0.08); padding: 0.5rem 1rem; border-radius: 999px; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.18);">
-                    <?php if ($foto_wk_exists): ?>
-                        <img src="<?php echo $foto_wk_url; ?>" alt="Foto" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255,255,255,0.4);">
-                    <?php else: ?>
-                        <span style="display: block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);"></span>
-                    <?php endif; ?>
+                    <span style="display: block; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);"></span>
                     <span style="font-size: 0.85rem; font-weight: 600; color: #f8fafc;">Wali Kelas Active</span>
                 </div>
             </div>

@@ -318,53 +318,41 @@ if (isset($_POST['update_foto'])) {
                 $has_photo = !empty($user['foto']) && file_exists(__DIR__ . '/../assets/uploads/profil/' . $user['foto']);
                 $photo_src = $has_photo ? '../assets/uploads/profil/' . htmlspecialchars($user['foto']) : '';
                 ?>
-                <form action="" method="POST" enctype="multipart/form-data" id="form-profil">
-                    <div class="form-card-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.75rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
-                        <div class="profile-avatar-container" id="avatar-container" onclick="document.getElementById('foto-upload').click();" style="width: 110px; height: 110px; border-radius: 50%; position: relative; cursor: pointer; overflow: hidden; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                            <?php if ($has_photo): ?>
-                                <img id="preview-avatar-img" src="<?php echo $photo_src; ?>" style="width: 100%; height: 100%; object-fit: cover;">
-                            <?php else: ?>
-                                <div id="avatar-placeholder" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb, #d97706); color: white; font-size: 2.5rem;">
-                                    <?php echo strtoupper(substr($guru['nama_lengkap'] ?? $user['username'] ?? 'G', 0, 1)); ?>
-                                </div>
-                            <?php endif; ?>
-                            
-                            <!-- Upload Overlay -->
-                            <div class="profile-avatar-overlay" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px;">
-                                <i class="fas fa-camera" style="font-size: 1.2rem; margin: 0; line-height: 1;"></i>
-                                <span style="font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; display: block; white-space: nowrap; font-family: sans-serif;">Ubah Foto</span>
-                            </div>
-                        </div>
+                <!-- Form upload foto tersembunyi (otomatis langsung submit saat file dipilih) -->
+                <form action="" method="POST" enctype="multipart/form-data" id="form-upload-foto" style="display:none;">
+                    <input type="hidden" name="update_foto" value="1">
+                    <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg, image/webp" onchange="autoUploadFoto(this);">
+                </form>
 
-                        <!-- Tombol Pilih Foto Langsung (Terlihat jelas di Mobile & Desktop) -->
-                        <button type="button" class="btn-change-photo" onclick="document.getElementById('foto-upload').click();" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-                            <i class="fas fa-camera"></i> Pilih / Ubah Foto
-                        </button>
+                <div class="form-card-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.75rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; margin-bottom: 1.5rem;">
+                    <div class="profile-avatar-container" id="avatar-container" onclick="document.getElementById('foto-upload').click();" style="width: 110px; height: 110px; border-radius: 50%; position: relative; cursor: pointer; overflow: hidden; border: 4px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.15);" title="Klik untuk langsung mengubah foto profil">
+                        <?php if ($has_photo): ?>
+                            <img id="preview-avatar-img" src="<?php echo $photo_src; ?>" style="width: 100%; height: 100%; object-fit: cover;">
+                        <?php else: ?>
+                            <div id="avatar-placeholder" style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, #2563eb, #d97706); color: white; font-size: 2.5rem;">
+                                <?php echo strtoupper(substr($guru['nama_lengkap'] ?? $user['username'] ?? 'G', 0, 1)); ?>
+                            </div>
+                        <?php endif; ?>
                         
-                        <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg, image/webp" style="display:none;" onchange="previewFoto(this);">
-
-                        <!-- Panel Aksi Preview Foto Baru -->
-                        <div id="preview-box" style="display:none; width: 100%; max-width: 420px; margin-top: 5px;">
-                            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; text-align: center;">
-                                <div style="color: #065f46; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
-                                    <i class="fas fa-eye"></i> Preview Foto Baru Terpilih
-                                </div>
-                                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                                    <button type="submit" name="update_foto" style="background: #10b981; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                        <i class="fas fa-upload"></i> Simpan Foto Profil
-                                    </button>
-                                    <button type="button" onclick="cancelPreview()" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer;">
-                                        <i class="fas fa-times"></i> Batal
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <div style="font-weight:700;font-size:1.15rem;color:#0f172a;"><?php echo htmlspecialchars($guru['nama_lengkap'] ?? $user['username']); ?></div>
-                            <div style="font-size:0.78rem;color:#475569;margin-top:2px;">Guru BK (NIP: <?php echo htmlspecialchars($guru['nip'] ?? '-'); ?>)</div>
+                        <!-- Upload Overlay -->
+                        <div class="profile-avatar-overlay" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 5px;">
+                            <i class="fas fa-camera" style="font-size: 1.2rem; margin: 0; line-height: 1;"></i>
+                            <span style="font-size: 11px; font-weight: 600; line-height: 1.2; text-align: center; display: block; white-space: nowrap; font-family: sans-serif;">Ubah Foto</span>
                         </div>
                     </div>
+
+                    <!-- Tombol Pilih Foto Langsung (Terlihat jelas di Mobile & Desktop) -->
+                    <button type="button" class="btn-change-photo" onclick="document.getElementById('foto-upload').click();" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 6px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-camera"></i> Pilih / Ubah Foto
+                    </button>
+
+                    <div>
+                        <div style="font-weight:700;font-size:1.15rem;color:#0f172a;"><?php echo htmlspecialchars($guru['nama_lengkap'] ?? $user['username']); ?></div>
+                        <div style="font-size:0.78rem;color:#475569;margin-top:2px;">Guru BK (NIP: <?php echo htmlspecialchars($guru['nip'] ?? '-'); ?>)</div>
+                    </div>
+                </div>
+
+                <form action="" method="POST" id="form-profil">
 
                     <div class="form-group">
                         <label><i class="fas fa-user-circle" style="margin-right:6px;color:#94a3b8;"></i>Nama Lengkap</label>
@@ -405,48 +393,21 @@ if (isset($_POST['update_foto'])) {
                 <script>
                     const defaultPhoto = "<?php echo $photo_src; ?>";
 
-                    function previewFoto(input) {
+                    function autoUploadFoto(input) {
                         if (input.files && input.files[0]) {
                             const file = input.files[0];
-                            if (file.size > 10 * 1024 * 1024) {
-                                alert("Ukuran file terlalu besar! Maksimal 10MB.");
+                            if (file.size > 5 * 1024 * 1024) {
+                                alert("Ukuran file terlalu besar! Maksimal 5MB.");
                                 input.value = "";
                                 return;
                             }
-                            const reader = new FileReader();
-                            reader.onload = function(e) {
-                                let img = document.getElementById('preview-avatar-img');
-                                let placeholder = document.getElementById('avatar-placeholder');
-                                if (!img) {
-                                    img = document.createElement('img');
-                                    img.id = 'preview-avatar-img';
-                                    img.style.width = '100%';
-                                    img.style.height = '100%';
-                                    img.style.objectFit = 'cover';
-                                    document.getElementById('avatar-container').prepend(img);
-                                }
-                                img.src = e.target.result;
-                                img.style.display = 'block';
-                                if (placeholder) placeholder.style.display = 'none';
-                                document.getElementById('preview-box').style.display = 'block';
-                            };
-                            reader.readAsDataURL(file);
+                            const container = document.getElementById('avatar-container');
+                            if (container) {
+                                container.style.opacity = '0.5';
+                                container.style.pointerEvents = 'none';
+                            }
+                            document.getElementById('form-upload-foto').submit();
                         }
-                    }
-
-                    function cancelPreview() {
-                        const input = document.getElementById('foto-upload');
-                        input.value = "";
-                        const img = document.getElementById('preview-avatar-img');
-                        const placeholder = document.getElementById('avatar-placeholder');
-                        if (defaultPhoto) {
-                            if (img) img.src = defaultPhoto;
-                            if (placeholder) placeholder.style.display = 'none';
-                        } else {
-                            if (img) img.style.display = 'none';
-                            if (placeholder) placeholder.style.display = 'flex';
-                        }
-                        document.getElementById('preview-box').style.display = 'none';
                     }
 
                     const togglePassword = document.querySelector('#togglePassword');

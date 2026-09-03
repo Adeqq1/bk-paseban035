@@ -122,26 +122,17 @@ $foto_admin_url = $foto_admin_exists ? '../assets/uploads/profil/' . htmlspecial
         <div class="header" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 2rem; border-radius: 16px; margin-bottom: 2rem; color: white; display: flex; align-items: center; gap: 1.5rem; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.05); position: relative; overflow: hidden;">
             <div style="position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: radial-gradient(circle, rgba(96,165,250,0.12) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none;"></div>
             <div style="display: flex; align-items: center; gap: 1.5rem; width: 100%;">
-                <!-- Preview Foto Profil di Header Dashboard -->
-                <div style="width: 65px; height: 65px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 4px 12px rgba(0,0,0,0.25); overflow: hidden; background: rgba(255,255,255,0.08);">
-                    <?php if ($foto_admin_exists): ?>
-                        <img src="<?php echo $foto_admin_url; ?>" alt="Foto Profil" style="width: 100%; height: 100%; object-fit: cover;">
-                    <?php else: ?>
-                        <i class="fas fa-user-shield" style="font-size: 1.8rem; color: #60a5fa;"></i>
-                    <?php endif; ?>
+                <div style="background: rgba(255,255,255,0.06); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; border: 1px solid rgba(255,255,255,0.1); box-shadow: inset 0 2px 4px rgba(255,255,255,0.05); flex-shrink: 0;">
+                    <i class="fas fa-user-shield" style="font-size: 1.8rem; color: #60a5fa;"></i>
                 </div>
                 <div style="flex: 1; min-width: 0;">
                     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; width: 100%;">
                         <h1 style="margin: 0; font-size: 1.6rem; font-weight: 800; color: white; letter-spacing: -0.01em;">Dashboard Overview</h1>
                         <div class="user-info" style="background: rgba(255,255,255,0.05); padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; gap: 8px; color: #cbd5e1; backdrop-filter: blur(8px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                            <?php if ($foto_admin_exists): ?>
-                                <img src="<?php echo $foto_admin_url; ?>" alt="Foto" style="width: 22px; height: 22px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255,255,255,0.4);">
-                            <?php else: ?>
-                                <span style="position: relative; display: flex; height: 8px; width: 8px;">
-                                    <span style="position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
-                                    <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #4ade80;"></span>
-                                </span>
-                            <?php endif; ?>
+                            <span style="position: relative; display: flex; height: 8px; width: 8px;">
+                                <span style="position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background-color: #4ade80; opacity: 0.75; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></span>
+                                <span style="position: relative; display: inline-flex; border-radius: 50%; height: 8px; width: 8px; background-color: #4ade80;"></span>
+                            </span>
                             Halo, <strong style="color: white; font-weight: 700;"><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
                         </div>
                     </div>

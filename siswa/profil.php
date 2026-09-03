@@ -389,24 +389,7 @@ if (isset($_POST['update_password'])) {
                             <i class="fas fa-camera"></i> Pilih / Ubah Foto
                         </button>
 
-                        <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg, image/webp" style="display:none;" onchange="previewFoto(this);">
-
-                        <!-- Panel Aksi Preview Foto Baru -->
-                        <div id="preview-box" style="display:none; width: 100%; max-width: 420px; margin-top: 5px;">
-                            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; text-align: center;">
-                                <div style="color: #065f46; font-size: 0.85rem; font-weight: 600; margin-bottom: 8px;">
-                                    <i class="fas fa-eye"></i> Preview Foto Baru Terpilih
-                                </div>
-                                <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                                    <button type="submit" style="background: #10b981; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-                                        <i class="fas fa-upload"></i> Simpan Foto Profil
-                                    </button>
-                                    <button type="button" onclick="cancelPreview()" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 0.825rem; font-weight: 600; cursor: pointer;">
-                                        <i class="fas fa-times"></i> Batal
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        <input id="foto-upload" type="file" name="foto" accept="image/jpeg, image/png, image/jpg, image/webp" style="display:none;" onchange="autoUploadFoto(this);">
 
                         <div>
                             <div style="font-weight:700;font-size:1.2rem;color:#0f172a;"><?php echo htmlspecialchars(ucwords(strtolower($siswa['nama_lengkap']))); ?></div>
@@ -503,50 +486,21 @@ if (isset($_POST['update_password'])) {
     </div>
 
     <script>
-        const defaultPhoto = "<?php echo $photo_src; ?>";
-
-        function previewFoto(input) {
+        function autoUploadFoto(input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                if (file.size > 10 * 1024 * 1024) {
-                    alert("Ukuran file terlalu besar! Maksimal 10MB.");
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("Ukuran file terlalu besar! Maksimal 5MB.");
                     input.value = "";
                     return;
                 }
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    let img = document.getElementById('preview-avatar-img');
-                    let placeholder = document.getElementById('avatar-placeholder');
-                    if (!img) {
-                        img = document.createElement('img');
-                        img.id = 'preview-avatar-img';
-                        img.style.width = '100%';
-                        img.style.height = '100%';
-                        img.style.objectFit = 'cover';
-                        document.getElementById('avatar-container').prepend(img);
-                    }
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                    if (placeholder) placeholder.style.display = 'none';
-                    document.getElementById('preview-box').style.display = 'block';
-                };
-                reader.readAsDataURL(file);
+                const container = document.getElementById('avatar-container');
+                if (container) {
+                    container.style.opacity = '0.5';
+                    container.style.pointerEvents = 'none';
+                }
+                document.getElementById('form-upload-foto').submit();
             }
-        }
-
-        function cancelPreview() {
-            const input = document.getElementById('foto-upload');
-            input.value = "";
-            const img = document.getElementById('preview-avatar-img');
-            const placeholder = document.getElementById('avatar-placeholder');
-            if (defaultPhoto) {
-                if (img) img.src = defaultPhoto;
-                if (placeholder) placeholder.style.display = 'none';
-            } else {
-                if (img) img.style.display = 'none';
-                if (placeholder) placeholder.style.display = 'flex';
-            }
-            document.getElementById('preview-box').style.display = 'none';
         }
     </script>
 
