@@ -12,13 +12,13 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 // Logika Proses Tambah Guru BK
 if (isset($_POST['tambah'])) {
-    echo "<script>
-alert('Fitur tambah user (Guru BK) sementara dinonaktifkan untuk uji coba.'); 
-window.location.href='kelola_guru_bk.php';
-</script>";
-    exit();
-    header("Location: kelola_guru_bk.php");
-exit();
+//     echo "<script>
+// alert('Fitur tambah user (Guru BK) sementara dinonaktifkan untuk uji coba.'); 
+// window.location.href='kelola_guru_bk.php';
+// </script>";
+//     exit();
+//     header("Location: kelola_guru_bk.php");
+// exit();
     $nip = mysqli_real_escape_string($koneksi, $_POST['nip']);
     $nama = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
     $jabatan = 'Guru BK';
