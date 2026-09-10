@@ -139,7 +139,7 @@ if ($kelas) {
                 </div>
                 <div>
                     <h1 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; color: white; letter-spacing: -0.01em;">Status Disiplin Siswa</h1>
-                    <p style="margin: 0; color: #94a3b8; font-size: 0.925rem;">Rekapitulasi akumulasi poin kedisiplinan siswa kelas <?php echo htmlspecialchars($kelas['nama_kelas'] ?? '-'); ?>.</p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.925rem;">Rekapitulasi kedisiplinan dan catatan kasus siswa kelas <?php echo htmlspecialchars($kelas['nama_kelas'] ?? '-'); ?>.</p>
                 </div>
             </div>
         </div>

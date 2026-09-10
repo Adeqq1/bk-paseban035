@@ -172,7 +172,7 @@ $tanggal_cetak = date('d') . ' ' . $bulan_map[(int)date('m')] . ' ' . date('Y');
         <button class="btn btn-print" onclick="window.print()">
             🖨️ Cetak Dokumen
         </button>
-        <a href="rekap_poin.php?kelas_id=<?php echo urlencode($filter_kelas); ?>&semester=<?php echo $semester; ?>&tahun=<?php echo $tahun; ?>" class="btn btn-back">
+        <a href="buku_kasus.php?kelas_id=<?php echo urlencode($filter_kelas); ?>&semester=<?php echo $semester; ?>&tahun=<?php echo $tahun; ?>" class="btn btn-back">
             ← Kembali
         </a>
     </div>

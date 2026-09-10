@@ -212,7 +212,7 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
             <li><a href="daftar_panggilan.php"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php" class="active"><i class="fas fa-book"></i> Buku Kasus</a></li>
+            <li><a href="buku_kasus.php" class="active"><i class="fas fa-book"></i> Buku Catatan Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -283,7 +283,7 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
                         <i class="fas fa-search"></i> Cari
                     </button>
                     <?php if(isset($_GET['kelas_id']) || isset($_GET['semester']) || isset($_GET['tahun'])): ?>
-                        <a href="rekap_poin.php" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 8px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s ease;" title="Reset Filter" onmouseover="this.style.background='#e2e8f0'; this.style.color='#334155'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
+                        <a href="buku_kasus.php" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; border-radius: 8px; width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s ease;" title="Reset Filter" onmouseover="this.style.background='#e2e8f0'; this.style.color='#334155'" onmouseout="this.style.background='#f1f5f9'; this.style.color='#64748b'">
                             <i class="fas fa-undo"></i>
                         </a>
                     <?php endif; ?>

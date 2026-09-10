@@ -1,13 +1,9 @@
 <?php
 session_start();
-require_once '../config/koneksi.php';
-
-/** @var mysqli $koneksi */
-
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'guru_bk') {
-    header("Location: ../index.php");
-    exit();
-}
+$query_str = !empty($_SERVER['QUERY_STRING']) ? '?' . $_SERVER['QUERY_STRING'] : '';
+header("Location: buku_kasus.php" . $query_str);
+exit();
+?>
 
 $user_id = $_SESSION['id'];
 $query_guru = mysqli_query($koneksi, "SELECT id, nama_lengkap, nip FROM guru WHERE user_id = '$user_id' OR id = '$user_id'");
@@ -212,7 +208,7 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
             <li><a href="daftar_panggilan.php"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php" class="active"><i class="fas fa-book"></i> Buku Kasus</a></li>
+            <li><a href="rekap_poin.php" class="active"><i class="fas fa-book"></i> Buku Catatan Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
