@@ -266,7 +266,7 @@ if (isset($_POST['update_foto'])) {
             <li><a href="daftar_panggilan.php"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php"><i class="fas fa-chart-line"></i> Rekap Poin</a></li>
+            <li><a href="rekap_poin.php"><i class="fas fa-book"></i> Buku Kasus</a></li>
             <li><a href="profil.php" class="active"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>

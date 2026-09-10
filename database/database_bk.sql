@@ -109,7 +109,6 @@ CREATE TABLE IF NOT EXISTS siswa (
 CREATE TABLE IF NOT EXISTS jenis_pelanggaran (
     id               INT           NOT NULL AUTO_INCREMENT,
     nama_pelanggaran VARCHAR(255)  NOT NULL,
-    poin             INT                    DEFAULT 0,
     kategori         ENUM('Ringan', 'Sedang', 'Berat') NOT NULL,
 
     PRIMARY KEY (id)
@@ -287,32 +286,32 @@ INSERT INTO kelas (nama_kelas, wali_kelas_id) VALUES
 INSERT INTO siswa (user_id, nisn, nama_lengkap, kelas_id, jenis_kelamin) VALUES
     (4, '0012345678', 'Ahmad Dhani', 1, 'L');
 
--- Daftar jenis pelanggaran beserta poin dan kategori
-INSERT INTO jenis_pelanggaran (nama_pelanggaran, poin, kategori) VALUES
+-- Daftar jenis pelanggaran beserta kategori
+INSERT INTO jenis_pelanggaran (nama_pelanggaran, kategori) VALUES
     -- Kategori Ringan
-    ('Terlambat masuk sekolah',                                        5,  'Ringan'),
-    ('Berpakaian tidak rapi / atribut tidak lengkap',                  5,  'Ringan'),
-    ('Membuang sampah sembarangan',                                     5,  'Ringan'),
-    ('Tidak melaksanakan tugas piket kelas',                           5,  'Ringan'),
-    ('Siswa laki-laki berambut gondrong / tidak rapi',                 10, 'Ringan'),
-    ('Membuat kegaduhan saat jam pelajaran',                           10, 'Ringan'),
-    ('Keluar lingkungan sekolah tanpa izin saat jam pelajaran',        15, 'Ringan'),
+    ('Terlambat masuk sekolah',                                        'Ringan'),
+    ('Berpakaian tidak rapi / atribut tidak lengkap',                  'Ringan'),
+    ('Membuang sampah sembarangan',                                     'Ringan'),
+    ('Tidak melaksanakan tugas piket kelas',                           'Ringan'),
+    ('Siswa laki-laki berambut gondrong / tidak rapi',                 'Ringan'),
+    ('Membuat kegaduhan saat jam pelajaran',                           'Ringan'),
+    ('Keluar lingkungan sekolah tanpa izin saat jam pelajaran',        'Ringan'),
     -- Kategori Sedang
-    ('Membolos / meninggalkan kelas tanpa keterangan',                 20, 'Sedang'),
-    ('Membawa/menggunakan HP di kelas saat jam pelajaran tanpa izin',  25, 'Sedang'),
-    ('Melakukan perundungan (bullying) secara verbal',                 30, 'Sedang'),
-    ('Bersikap tidak sopan atau membangkang perintah Guru',           30, 'Sedang'),
-    ('Merusak fasilitas sekolah (mencoret meja/dinding)',              40, 'Sedang'),
-    ('Merokok di lingkungan sekolah / membawa rokok',                  50, 'Sedang'),
+    ('Membolos / meninggalkan kelas tanpa keterangan',                 'Sedang'),
+    ('Membawa/menggunakan HP di kelas saat jam pelajaran tanpa izin',  'Sedang'),
+    ('Melakukan perundungan (bullying) secara verbal',                 'Sedang'),
+    ('Bersikap tidak sopan atau membangkang perintah Guru',           'Sedang'),
+    ('Merusak fasilitas sekolah (mencoret meja/dinding)',              'Sedang'),
+    ('Merokok di lingkungan sekolah / membawa rokok',                  'Sedang'),
     -- Kategori Berat
-    ('Melakukan perjudian atau membawa kartu judi',                    75,  'Berat'),
-    ('Membawa senjata tajam atau senjata berbahaya',                   100, 'Berat'),
-    ('Tawuran atau perkelahian di dalam/luar sekolah',                 100, 'Berat'),
-    ('Melakukan kekerasan fisik atau penganiayaan',                    100, 'Berat'),
-    ('Mengonsumsi atau membawa minuman keras',                         100, 'Berat'),
-    ('Mengonsumsi, membawa, atau mengedarkan narkoba',                 100, 'Berat'),
-    ('Melakukan tindakan asusila atau pelecehan',                      100, 'Berat'),
-    ('Mencuri barang milik sekolah atau milik orang lain',             100, 'Berat');
+    ('Melakukan perjudian atau membawa kartu judi',                    'Berat'),
+    ('Membawa senjata tajam atau senjata berbahaya',                   'Berat'),
+    ('Tawuran atau perkelahian di dalam/luar sekolah',                 'Berat'),
+    ('Melakukan kekerasan fisik atau penganiayaan',                    'Berat'),
+    ('Mengonsumsi atau membawa minuman keras',                         'Berat'),
+    ('Mengonsumsi, membawa, atau mengedarkan narkoba',                 'Berat'),
+    ('Melakukan tindakan asusila atau pelecehan',                      'Berat'),
+    ('Mencuri barang milik sekolah atau milik orang lain',             'Berat');
 
 -- =============================================================
 --  BAGIAN 4.5 : TABEL ALIH TANGAN KASUS

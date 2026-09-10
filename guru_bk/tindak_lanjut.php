@@ -23,7 +23,7 @@ $report_id = mysqli_real_escape_string($koneksi, $_GET['id']);
 
 // Ambil detail laporan
 $query_report = mysqli_query($koneksi, "
-    SELECT cp.*, s.nama_lengkap as nama_siswa, jp.nama_pelanggaran, jp.poin, g.nama_lengkap as nama_pelapor
+    SELECT cp.*, s.nama_lengkap as nama_siswa, jp.nama_pelanggaran, g.nama_lengkap as nama_pelapor
     FROM catatan_pelanggaran cp
     JOIN siswa s ON cp.siswa_id = s.id
     JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
@@ -91,7 +91,7 @@ if (isset($_POST['simpan'])) {
             <li><a href="daftar_panggilan.php"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php"><i class="fas fa-chart-line"></i> Rekap Poin</a></li>
+            <li><a href="rekap_poin.php"><i class="fas fa-book"></i> Buku Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -141,7 +141,6 @@ if (isset($_POST['simpan'])) {
                     <div style="width: 160px; font-weight: 600; color: #475569;">Pelanggaran</div>
                     <div style="color: #1e293b; display: flex; align-items: center; gap: 8px;">
                         : <?php echo $report['nama_pelanggaran']; ?> 
-                        <span style="background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">+<?php echo $report['poin']; ?> Poin</span>
                     </div>
                 </div>
                 <div style="display: flex; margin-bottom: 12px;">

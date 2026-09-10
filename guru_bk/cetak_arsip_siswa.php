@@ -42,7 +42,7 @@ if ($semester == '1') {
 
 // Ambil riwayat Pelanggaran
 $res_pelanggaran = mysqli_query($koneksi, "
-    SELECT cp.tanggal, jp.nama_pelanggaran, jp.poin, cp.keterangan
+    SELECT cp.tanggal, jp.nama_pelanggaran, cp.keterangan
     FROM catatan_pelanggaran cp
     JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
     WHERE cp.siswa_id = '$siswa_id' AND cp.tanggal BETWEEN '$start_date' AND '$end_date'
@@ -86,13 +86,13 @@ $res_bimbingan = mysqli_query($koneksi, "
         }
         
         /* Wadah dan ukuran logo */
-        .kop-logo-container { width: 90px; height: 95px; display: flex; align-items: center; justify-content: center; }
-        .kop-logo { max-width: 90px; max-height: 95px; }
+        .kop-logo-container { width: 105px; height: 110px; display: flex; align-items: center; justify-content: center; }
+        .kop-logo { max-width: 105px; max-height: 110px; object-fit: contain; }
         
         /* Kotak putih jika logo belum diupload */
         .logo-placeholder { 
-            width: 80px; 
-            height: 90px; 
+            width: 90px; 
+            height: 100px; 
             border: 1px dashed #ccc; 
             background: #fff; 
             display: flex; 
@@ -104,10 +104,10 @@ $res_bimbingan = mysqli_query($koneksi, "
         }
         
         /* Pengaturan teks di tengah Kop Surat */
-        .kop-text { text-align: center; flex: 1; padding: 0 10px; }
-        .kop-text h3 { margin: 0; font-size: 14pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; }
-        .kop-text h2 { margin: 2px 0; font-size: 18pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-        .kop-text p { margin: 3px 0; font-size: 11px; font-style: normal; color: #222; }
+        .kop-text { text-align: center; flex: 1; padding: 0 15px; font-family: 'Times New Roman', Times, serif; }
+        .kop-text h3 { margin: 0; font-size: 16pt; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; font-family: 'Times New Roman', Times, serif; color: #000; line-height: 1.25; }
+        .kop-text h2 { margin: 3px 0; font-size: 22pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; font-family: 'Times New Roman', Times, serif; color: #000; line-height: 1.25; }
+        .kop-text p { margin: 3px 0; font-size: 11.5pt; font-style: normal; color: #222; font-family: 'Times New Roman', Times, serif; }
         
         /* Area informasi siswa (Nama, NIS, Kelas) */
         .info-siswa { margin-bottom: 20px; }
@@ -248,7 +248,7 @@ $res_bimbingan = mysqli_query($koneksi, "
             <h3>PEMERINTAH PROPINSI JAMBI</h3>
             <h3>DINAS PENDIDIKAN</h3>
             <h2>SMA NEGERI 7 BUNGO</h2>
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 4px; font-size: 10pt; font-family: 'Times New Roman', Times, serif;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 6px; font-size: 11.5pt; font-family: 'Times New Roman', Times, serif;">
                 <span style="font-style: italic;">Jl. Desa lubuk Landai, Kec. Tanah Sepenggal Lintas.</span>
                 <span style="font-weight: bold; font-style: normal;">NPSN: 10500692</span>
             </div>
@@ -295,32 +295,25 @@ $res_bimbingan = mysqli_query($koneksi, "
             <tr>
                 <th style="width: 5%; text-align: center;">No</th>
                 <th style="width: 15%; text-align: center;">Tanggal</th>
-                <th style="width: 30%;">Kasus Pelanggaran</th>
+                <th style="width: 35%;">Kasus Pelanggaran</th>
                 <th style="width: 45%;">Keterangan</th>
-                <th style="width: 5%; text-align: center;">Poin</th>
             </tr>
         </thead>
         <tbody>
             <?php 
-            $no = 1; $total_p = 0;
+            $no = 1;
             if(mysqli_num_rows($res_pelanggaran) > 0) {
                 while($p = mysqli_fetch_assoc($res_pelanggaran)): 
-                    $total_p += $p['poin'];
             ?>
                 <tr>
                     <td class="col-center"><?php echo $no++; ?></td>
                     <td class="col-center"><?php echo tgl_indo($p['tanggal']); ?></td>
                     <td class="col-justify"><?php echo $p['nama_pelanggaran']; ?></td>
                     <td class="col-justify"><?php echo $p['keterangan']; ?></td>
-                    <td class="col-center"><?php echo $p['poin']; ?></td>
                 </tr>
             <?php endwhile; ?>
-                <tr>
-                    <td colspan="4" style="text-align: left;">TOTAL POIN PELANGGARAN</td>
-                    <td style="text-align: center; background: #eee;"><?php echo $total_p; ?></td>
-                </tr>
             <?php } else { ?>
-                <tr><td colspan="5" style="text-align: center;">Tidak ada catatan pelanggaran.</td></tr>
+                <tr><td colspan="4" style="text-align: center;">Tidak ada catatan pelanggaran.</td></tr>
             <?php } ?>
         </tbody>
     </table>

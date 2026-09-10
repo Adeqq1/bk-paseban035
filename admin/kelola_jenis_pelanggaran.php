@@ -15,12 +15,12 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 
 // =========================================================================
 // 2. PROSES TAMBAH JENIS PELANGGARAN BARU
-// Menambahkan master data Jenis Pelanggaran beserta bobot poin dan kategorinya.
+// Menambahkan master data Jenis Pelanggaran beserta kategorinya.
 // =========================================================================
 if (isset($_POST['tambah'])) {
     $nama = trim($_POST['nama_pelanggaran']);
     $nama_escaped = mysqli_real_escape_string($koneksi, $nama);
-    $poin = mysqli_real_escape_string($koneksi, $_POST['poin']);
+
     $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori']);
 
     $cek = mysqli_query($koneksi, "SELECT id FROM jenis_pelanggaran WHERE LOWER(TRIM(nama_pelanggaran)) = LOWER(TRIM('$nama_escaped'))");
@@ -28,7 +28,7 @@ if (isset($_POST['tambah'])) {
         $msg = "error_duplikat";
     } else {
         try {
-            $query = "INSERT INTO jenis_pelanggaran (nama_pelanggaran, poin, kategori) VALUES ('$nama_escaped', '$poin', '$kategori')";
+            $query = "INSERT INTO jenis_pelanggaran (nama_pelanggaran, kategori) VALUES ('$nama_escaped', '$kategori')";
             if (mysqli_query($koneksi, $query)) {
                 $msg = "success_tambah";
             } else {
@@ -42,13 +42,13 @@ if (isset($_POST['tambah'])) {
 
 // =========================================================================
 // 3. PROSES EDIT / PERBARUI DATA JENIS PELANGGARAN
-// Mengubah nama pelanggaran, bobot poin, atau tingkat kategori.
+// Mengubah nama pelanggaran atau tingkat kategori.
 // =========================================================================
 if (isset($_POST['edit'])) {
     $id = mysqli_real_escape_string($koneksi, $_POST['id']);
     $nama = trim($_POST['nama_pelanggaran']);
     $nama_escaped = mysqli_real_escape_string($koneksi, $nama);
-    $poin = mysqli_real_escape_string($koneksi, $_POST['poin']);
+
     $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori']);
 
     $cek = mysqli_query($koneksi, "SELECT id FROM jenis_pelanggaran WHERE LOWER(TRIM(nama_pelanggaran)) = LOWER(TRIM('$nama_escaped')) AND id != '$id'");
@@ -56,7 +56,7 @@ if (isset($_POST['edit'])) {
         $msg = "error_duplikat";
     } else {
         try {
-            $query = "UPDATE jenis_pelanggaran SET nama_pelanggaran='$nama_escaped', poin='$poin', kategori='$kategori' WHERE id='$id'";
+            $query = "UPDATE jenis_pelanggaran SET nama_pelanggaran='$nama_escaped', kategori='$kategori' WHERE id='$id'";
             if (mysqli_query($koneksi, $query)) {
                 $msg = "success_edit";
             } else {
@@ -103,7 +103,7 @@ if (!empty($search_query)) {
 $where_clause = count($where_clauses) > 0 ? "WHERE " . implode(" AND ", $where_clauses) : "";
 
 // Jalankan Query SQL untuk menarik data jenis pelanggaran
-$query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_clause ORDER BY kategori DESC, poin ASC");
+$query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_clause ORDER BY kategori DESC, nama_pelanggaran ASC");
 
 ?>
 <!DOCTYPE html>
@@ -252,7 +252,7 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
                         <tr>
                             <th style="width: 75px; text-align: center;">No</th>
                             <th>Nama Pelanggaran</th>
-                            <th style="text-align: center;">Poin</th>
+
                             <th style="text-align: center;">Kategori</th>
                             <th style="width: 140px; text-align: center;">Aksi</th>
                         </tr>
@@ -272,12 +272,7 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
                                 <span style="font-size: 0.875rem; color: #334155; font-weight: 400; line-height: 1.5;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></span>
                             </td>
 
-                            <!-- Kolom 3: Poin Pelanggaran -->
-                            <td style="text-align: center;">
-                                <span class="badge" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                                    +<?php echo $row['poin']; ?> Poin
-                                </span>
-                            </td>
+
 
                             <!-- Kolom 4: Kategori Pelanggaran -->
                             <td style="text-align: center;">
@@ -304,7 +299,7 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
                         <?php
                             endwhile;
                         } else {
-                            echo "<tr><td colspan='5' style='text-align:center; padding:2rem; color:#94a3b8;'>Data jenis pelanggaran tidak ditemukan.</td></tr>";
+                            echo "<tr><td colspan='4' style='text-align:center; padding:2rem; color:#94a3b8;'>Data jenis pelanggaran tidak ditemukan.</td></tr>";
                         }
                         ?>
                     </tbody>
@@ -321,7 +316,7 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
             <div class="modal-header">
                 <div>
                     <h2 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">Tambah Jenis Pelanggaran</h2>
-                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Tentukan nama, poin, dan kategori pelanggaran.</p>
+                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Tentukan nama dan kategori pelanggaran.</p>
                 </div>
                 <div class="close" onclick="closeModal('modalTambah')">&#x2715;</div>
             </div>
@@ -332,12 +327,7 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
                     </label>
                     <input type="text" name="nama_pelanggaran" class="form-control" placeholder="Contoh: Merokok di sekolah" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem; font-weight: 600; font-size: 0.825rem; color: #475569; text-transform: uppercase; letter-spacing: 0.03em;">
-                        <i class="fas fa-star" style="color: var(--primary);"></i> Poin
-                    </label>
-                    <input type="number" name="poin" class="form-control" placeholder="Masukkan jumlah poin" required>
-                </div>
+
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem; font-weight: 600; font-size: 0.825rem; color: #475569; text-transform: uppercase; letter-spacing: 0.03em;">
                         <i class="fas fa-layer-group" style="color: var(--primary);"></i> Kategori
@@ -376,12 +366,7 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
                     </label>
                     <input type="text" name="nama_pelanggaran" id="edit_nama" class="form-control" required>
                 </div>
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem; font-weight: 600; font-size: 0.825rem; color: #475569; text-transform: uppercase; letter-spacing: 0.03em;">
-                        <i class="fas fa-star" style="color: var(--primary);"></i> Poin
-                    </label>
-                    <input type="number" name="poin" id="edit_poin" class="form-control" required>
-                </div>
+
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.6rem; font-weight: 600; font-size: 0.825rem; color: #475569; text-transform: uppercase; letter-spacing: 0.03em;">
                         <i class="fas fa-layer-group" style="color: var(--primary);"></i> Kategori
@@ -413,7 +398,7 @@ $query_jenis = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran $where_cl
         function editJenis(data) {
             document.getElementById('edit_id').value = data.id;
             document.getElementById('edit_nama').value = data.nama_pelanggaran;
-            document.getElementById('edit_poin').value = data.poin;
+
             document.getElementById('edit_kategori').value = data.kategori;
             openModal('modalEdit');
         }

@@ -74,7 +74,7 @@ $query_laporan = mysqli_query($koneksi, "
     SELECT MAX(cp.id) as id, cp.siswa_id,
            s.nama_lengkap as nama_siswa, s.nisn, k.nama_kelas, 
            jp.nama_pelanggaran, jp.kategori,
-           SUM(jp.poin) as total_poin,
+
            COUNT(cp.id) as jumlah_laporan,
            GROUP_CONCAT(DISTINCT g.nama_lengkap SEPARATOR ', ') as nama_pelapor,
            GROUP_CONCAT(cp.keterangan SEPARATOR ' | ') as semua_keterangan,
@@ -229,7 +229,7 @@ $query_laporan = mysqli_query($koneksi, "
             <li><a href="daftar_panggilan.php"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php"><i class="fas fa-chart-line"></i> Rekap Poin</a></li>
+            <li><a href="rekap_poin.php"><i class="fas fa-book"></i> Buku Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -366,9 +366,11 @@ $query_laporan = mysqli_query($koneksi, "
                                 <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
                                     <span style="font-size: 0.9rem; color: #334155; font-weight: 400; line-height: 1.4;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></span>
                                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                        <span class="badge badge-danger" style="font-size: 0.72rem; padding: 4px 8px; font-weight: 700; border-radius: 4px; margin-left: 0;">+<?php echo $row['total_poin']; ?> Poin</span>
-                                        <?php if ($row['jumlah_laporan'] > 1): ?>
-                                            <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; font-weight: 700; background: #fef3c7; color: #b45309; border-radius: 4px; border: 1px solid #fde68a;"><?php echo $row['jumlah_laporan']; ?>x Laporan</span>
+
+                                        <?php if ($row['jumlah_laporan'] >= 3): ?>
+                                            <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; font-weight: 700; background: #fee2e2; color: #dc2626; border-radius: 4px; border: 1px solid #fca5a5;"><i class="fas fa-exclamation-triangle"></i> Wajib Panggil Ortu (<?php echo $row['jumlah_laporan']; ?>x Laporan)</span>
+                                        <?php elseif ($row['jumlah_laporan'] == 2): ?>
+                                            <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; font-weight: 700; background: #fef3c7; color: #b45309; border-radius: 4px; border: 1px solid #fde68a;"><i class="fas fa-redo"></i> Pelanggaran Berulang (2x Laporan)</span>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -379,15 +381,27 @@ $query_laporan = mysqli_query($koneksi, "
                                 <small style="color: #64748b; font-weight: 500;"><?php echo !empty($row['pelapor_asli_concat']) ? htmlspecialchars($row['pelapor_asli_concat']) : '-'; ?></small>
                             </td>
                             <td style="text-align: center; vertical-align: middle; white-space: nowrap;">
-                                <?php if ($row['konseling_id']): ?>
-                                    <span class="badge badge-success" style="font-size: 0.75rem; padding: 4px 8px; font-weight: 600;">
-                                        <i class="fas fa-check-circle"></i> Selesai
-                                    </span>
-                                <?php else: ?>
-                                    <a href="tindak_lanjut.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 6px 12px; font-weight: 600; border-radius: 6px;">
-                                        <i class="fas fa-hands-helping"></i> Tindak Lanjut
-                                    </a>
-                                <?php endif; ?>
+                                <div style="display: flex; flex-direction: column; gap: 6px; align-items: center;">
+                                    <?php if ($row['konseling_id']): ?>
+                                        <span class="badge badge-success" style="font-size: 0.75rem; padding: 4px 8px; font-weight: 600;">
+                                            <i class="fas fa-check-circle"></i> Selesai
+                                        </span>
+                                    <?php else: ?>
+                                        <a href="tindak_lanjut.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm" style="font-size: 0.72rem; padding: 6px 12px; font-weight: 600; border-radius: 6px;">
+                                            <i class="fas fa-hands-helping"></i> Tindak Lanjut
+                                        </a>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($row['jumlah_laporan'] >= 3): ?>
+                                        <a href="buat_panggilan.php?id=<?php echo $row['siswa_id']; ?>" class="btn btn-danger btn-sm" style="font-size: 0.75rem; padding: 5px 10px; font-weight: 700; border-radius: 6px; background: #dc2626; color: white; border: none; text-decoration: none;" title="Siswa melakukan pelanggaran >= 3x. Terbitkan Surat Panggilan Orang Tua.">
+                                            <i class="fas fa-envelope-open-text"></i> Terbitkan Panggilan
+                                        </a>
+                                    <?php elseif ($row['jumlah_laporan'] == 2): ?>
+                                        <a href="buat_panggilan.php?id=<?php echo $row['siswa_id']; ?>" class="btn btn-warning btn-sm" style="font-size: 0.72rem; padding: 4px 8px; font-weight: 600; border-radius: 6px; background: #f59e0b; color: white; border: none; text-decoration: none;" title="Siswa melakukan pelanggaran berulang kali (2x). Klik untuk panggil orang tua.">
+                                            <i class="fas fa-envelope"></i> Panggil Ortu
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                         <?php 

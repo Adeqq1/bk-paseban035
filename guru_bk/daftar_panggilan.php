@@ -299,7 +299,7 @@ $query_panggilan = mysqli_query($koneksi, "
             <li><a href="daftar_panggilan.php" class="active"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php"><i class="fas fa-chart-line"></i> Rekap Poin</a></li>
+            <li><a href="rekap_poin.php"><i class="fas fa-book"></i> Buku Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -328,9 +328,12 @@ $query_panggilan = mysqli_query($koneksi, "
                 </div>
                 <div>
                     <h1 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 800; color: white; letter-spacing: -0.01em;">Panggilan <span style="color: #60a5fa;">Orang Tua</span></h1>
-                    <p style="margin: 0; color: #94a3b8; font-size: 0.925rem;">Kelola surat pemanggilan orang tua/wali murid berdasarkan poin pelanggaran.</p>
+                    <p style="margin: 0; color: #94a3b8; font-size: 0.925rem;">Kelola surat pemanggilan orang tua/wali murid.</p>
                 </div>
             </div>
+            <a href="buat_panggilan.php" class="btn btn-primary" style="background: #2563eb; color: white; padding: 0.7rem 1.25rem; border-radius: 10px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; z-index: 1; border: none; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); transition: all 0.2s;">
+                <i class="fas fa-plus"></i> Buat Surat Panggilan
+            </a>
         </div>
 
         <?php if (isset($_GET['pesan']) && $_GET['pesan'] == 'success_buat'): ?>

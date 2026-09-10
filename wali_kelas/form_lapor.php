@@ -49,48 +49,6 @@ if (isset($_POST['lapor'])) {
               VALUES ('$siswa_id', '$pelanggaran_id', '$guru_id', '$tanggal', '$keterangan')";
     
     if (mysqli_query($koneksi, $query)) {
-        $report_id = mysqli_insert_id($koneksi);
-        
-        // Cek kategori jenis pelanggaran untuk otomatisasi penyelesaian pelanggaran ringan (1x & 2x)
-        $query_jp = mysqli_query($koneksi, "SELECT nama_pelanggaran, kategori, poin FROM jenis_pelanggaran WHERE id = '$pelanggaran_id'");
-        $jp = mysqli_fetch_assoc($query_jp);
-        $kategori = $jp['kategori'] ?? '';
-        $nama_pelanggaran = $jp['nama_pelanggaran'] ?? '';
-        $poin_pelanggaran = (int)($jp['poin'] ?? 0);
-
-        if ($kategori === 'Ringan' && $poin_pelanggaran <= 20) {
-            // Hitung frekuensi laporan pelanggaran sejenis untuk siswa ini di semester berjalan
-            $current_semester = date('m') >= 7 ? '1' : '2';
-            $current_tahun = date('Y');
-            $sem_start = ($current_semester == '1') ? "$current_tahun-07-01" : "$current_tahun-01-01";
-            $sem_end = ($current_semester == '1') ? "$current_tahun-12-31" : "$current_tahun-06-30";
-
-            $query_count = mysqli_query($koneksi, "
-                SELECT COUNT(cp.id) as total 
-                FROM catatan_pelanggaran cp
-                JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
-                WHERE cp.siswa_id = '$siswa_id' 
-                  AND jp.kategori = 'Ringan' 
-                  AND jp.poin <= 20
-                  AND cp.tanggal BETWEEN '$sem_start' AND '$sem_end'
-            ");
-            $row_count = mysqli_fetch_assoc($query_count);
-            $count_laporan = $row_count['total'] ?? 1;
-
-            if ($count_laporan <= 2) {
-                // Selesaikan secara otomatis oleh sistem (pembinaan Wali Kelas)
-                $masalah_auto = mysqli_real_escape_string($koneksi, "Siswa melakukan pelanggaran ringan: " . $nama_pelanggaran . " (Laporan ke-" . $count_laporan . ").");
-                $solusi_auto = mysqli_real_escape_string($koneksi, "Telah diberikan pembinaan langsung oleh Wali Kelas (Pembinaan ke-" . $count_laporan . ").");
-                $nama_pelanggaran_esc = mysqli_real_escape_string($koneksi, $nama_pelanggaran);
-                
-                $query_auto_konseling = "
-                    INSERT INTO konseling (siswa_id, guru_id, catatan_pelanggaran_id, tanggal, masalah, solusi, status, jenis_konseling, topik_permasalahan)
-                    VALUES ('$siswa_id', '$guru_id', '$report_id', '$tanggal', '$masalah_auto', '$solusi_auto', 'Selesai', 'Tindak Lanjut', '$nama_pelanggaran_esc')
-                ";
-                mysqli_query($koneksi, $query_auto_konseling);
-            }
-        }
-
         // Jika berhasil, alihkan pengguna ke halaman status_laporan.php dengan notifikasi sukses
         header("Location: status_laporan.php?pesan=success");
         exit();
@@ -321,7 +279,7 @@ $selected_siswa_id = isset($_GET['siswa_id']) ? $_GET['siswa_id'] : '';
                             <option value="">-- Pilih Jenis Pelanggaran --</option>
                             <?php while($p = mysqli_fetch_assoc($query_pelanggaran)): ?>
                                 <option value="<?php echo $p['id']; ?>">
-                                    <?php echo $p['nama_pelanggaran']; ?> (<?php echo $p['poin']; ?> Poin)
+                                    <?php echo htmlspecialchars($p['nama_pelanggaran']); ?>
                                 </option>
                             <?php endwhile; ?>
                         </select>

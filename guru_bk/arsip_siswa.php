@@ -48,7 +48,7 @@ if ($selected_siswa_id) {
 
     // Mengambil riwayat Pelanggaran siswa pada semester ini
     $res_pelanggaran = mysqli_query($koneksi, "
-        SELECT cp.tanggal, jp.nama_pelanggaran, jp.poin, cp.keterangan
+        SELECT cp.tanggal, jp.nama_pelanggaran, cp.keterangan
         FROM catatan_pelanggaran cp
         JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
         WHERE cp.siswa_id = '$selected_siswa_id' AND cp.tanggal BETWEEN '$start_date' AND '$end_date'
@@ -158,7 +158,7 @@ if ($selected_siswa_id) {
             <li><a href="daftar_panggilan.php"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php"><i class="fas fa-chart-line"></i> Rekap Poin</a></li>
+            <li><a href="rekap_poin.php"><i class="fas fa-book"></i> Buku Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -247,7 +247,7 @@ if ($selected_siswa_id) {
                     </div>
                     <a href="cetak_arsip_siswa.php?siswa_id=<?php echo $selected_siswa_id; ?>&semester=<?php echo $semester; ?>&tahun=<?php echo $tahun; ?>" 
                        target="_blank" class="btn btn-primary">
-                        <i class="fas fa-print"></i> Rekap Poin
+                        <i class="fas fa-print"></i> Buku Kasus
                     </a>
                 </div>
 
@@ -264,7 +264,7 @@ if ($selected_siswa_id) {
                                     <th>Tanggal</th>
                                     <th>Pelanggaran</th>
                                     <th>Keterangan</th>
-                                    <th>Poin</th>
+
                                 </tr>
                             </thead>
                             <tbody>
@@ -278,11 +278,11 @@ if ($selected_siswa_id) {
                                                     <?php echo nl2br(htmlspecialchars($p['keterangan'] ?? '-')); ?>
                                                 </div>
                                             </td>
-                                            <td><span style="color: #ef4444; font-weight: bold;">+<?php echo $p['poin']; ?></span></td>
+
                                         </tr>
                                     <?php endwhile; ?>
                                 <?php else: ?>
-                                    <tr><td colspan="4" style="text-align:center;" class="text-muted">Tidak ada riwayat pelanggaran.</td></tr>
+                                    <tr><td colspan="3" style="text-align:center;" class="text-muted">Tidak ada riwayat pelanggaran.</td></tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>

@@ -95,7 +95,7 @@ $where_sql = count($where_clauses) > 0 ? "WHERE " . implode(" AND ", $where_clau
 // 9. EKSEKUSI QUERY AMBIL DATA LAPORAN PELANGGARAN
 $query_laporan = mysqli_query($koneksi, "
     SELECT cp.*, s.nama_lengkap as nama_siswa, s.nisn, s.kelas_id,
-           jp.nama_pelanggaran, jp.poin, jp.kategori,
+           jp.nama_pelanggaran, jp.kategori,
            g.nama_lengkap as nama_pelapor, g.id as id_pelapor_guru,
            kon.id as konseling_id, kon.status as status_bk, kon.solusi as tindakan_solusi, kon.tanggal as tanggal_tindak_lanjut
     FROM catatan_pelanggaran cp
@@ -414,7 +414,6 @@ function tgl_indo_singkat($tanggal) {
                             <th style="padding: 14px 18px; color: #475569; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Tanggal</th>
                             <th style="padding: 14px 18px; color: #475569; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Nama Siswa</th>
                             <th style="padding: 14px 18px; color: #475569; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Pelanggaran</th>
-                            <th style="padding: 14px 18px; color: #475569; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; text-align: center;">Poin</th>
                             <th style="padding: 14px 18px; color: #475569; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; text-align: center;">Status BK</th>
                             <th style="padding: 14px 18px; color: #475569; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Tindak Lanjut / Solusi</th>
                         </tr>
@@ -434,9 +433,6 @@ function tgl_indo_singkat($tanggal) {
                                 <div style="font-size: 0.8rem; color: #64748b; font-weight: 400; margin-top: 3px;">NISN: <?php echo htmlspecialchars($row['nisn']); ?></div>
                             </td>
                             <td style="padding: 14px 18px; color: #334155; font-size: 0.875rem;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></td>
-                            <td style="padding: 14px 18px; text-align: center;">
-                                <span style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 0.8rem; border: 1px solid #fecaca;">+<?php echo $row['poin']; ?></span>
-                            </td>
                             <td style="padding: 14px 18px; text-align: center;">
                                 <?php if ($st == 'Diproses' || $st == 'Proses'): ?>
                                     <span class="status-badge-diproses"><i class="fas fa-spinner fa-spin"></i> Diproses</span>

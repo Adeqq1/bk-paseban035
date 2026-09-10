@@ -29,35 +29,20 @@ if ($foto_siswa_exists) {
 }
 $foto_siswa_url = $foto_siswa_exists ? '../assets/uploads/profil/' . htmlspecialchars($foto_siswa) : '';
 
-// Menghitung akumulasi poin pelanggaran semester ini
-$current_semester = date('m') >= 7 ? '1' : '2';
-$current_tahun = date('Y');
-if ($current_semester == '1') {
-    $start_date = "$current_tahun-07-01";
-    $end_date = "$current_tahun-12-31";
-    $label_semester = "Semester Ganjil " . $current_tahun;
-} else {
-    $start_date = "$current_tahun-01-01";
-    $end_date = "$current_tahun-06-30";
-    $label_semester = "Semester Genap " . $current_tahun;
-}
-
-$query_poin_semester = mysqli_query($koneksi, "
-    SELECT SUM(jp.poin) as total 
-    FROM catatan_pelanggaran cp 
-    JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id 
-    WHERE cp.siswa_id = '$siswa_id' AND cp.tanggal BETWEEN '$start_date' AND '$end_date'
+// Menghitung statistik siswa
+$query_pelanggaran = mysqli_query($koneksi, "
+    SELECT COUNT(*) as total 
+    FROM catatan_pelanggaran 
+    WHERE siswa_id = '$siswa_id'
 ");
-$poin_semester = mysqli_fetch_assoc($query_poin_semester)['total'] ?? 0;
+$total_pelanggaran = mysqli_fetch_assoc($query_pelanggaran)['total'] ?? 0;
 
-// Menghitung akumulasi total poin pelanggaran siswa (selama sekolah)
-$query_poin = mysqli_query($koneksi, "
-    SELECT SUM(jp.poin) as total 
-    FROM catatan_pelanggaran cp 
-    JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id 
-    WHERE cp.siswa_id = '$siswa_id'
+$query_bimbingan = mysqli_query($koneksi, "
+    SELECT COUNT(*) as total 
+    FROM bimbingan 
+    WHERE siswa_id = '$siswa_id'
 ");
-$total_poin = mysqli_fetch_assoc($query_poin)['total'] ?? 0;
+$total_bimbingan = mysqli_fetch_assoc($query_bimbingan)['total'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -126,46 +111,27 @@ $total_poin = mysqli_fetch_assoc($query_poin)['total'] ?? 0;
 
         <!-- Grid Kartu Statistik -->
         <div class="stats-grid">
-            <!-- Kartu 1: Poin Semester Ini -->
-            <div class="stat-card">
-                <div class="stat-icon amber">
-                    <i class="fas fa-calendar-alt"></i>
-                </div>
-                <div class="stat-body">
-                    <div class="stat-label">Poin Semester Ini</div>
-                    <div class="stat-value"><?php echo $poin_semester; ?></div>
-                    <div class="stat-sub"><?php echo $label_semester; ?></div>
-                </div>
-            </div>
-
-            <!-- Kartu 2: Akumulasi Poin -->
+            <!-- Kartu 1: Total Catatan Pelanggaran -->
             <div class="stat-card">
                 <div class="stat-icon red">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="stat-body">
-                    <div class="stat-label">Total Akumulasi</div>
-                    <div class="stat-value"><?php echo $total_poin; ?></div>
-                    <div class="stat-sub">Poin keseluruhan selama sekolah</div>
+                    <div class="stat-label">Catatan Pelanggaran</div>
+                    <div class="stat-value"><?php echo $total_pelanggaran; ?></div>
+                    <div class="stat-sub">Total catatan pelanggaran</div>
                 </div>
             </div>
-            
-            <!-- Kartu 3: Status Perilaku -->
+
+            <!-- Kartu 2: Total Sesi Bimbingan -->
             <div class="stat-card">
-                <div class="stat-icon <?php echo $total_poin >= 50 ? 'amber' : 'green'; ?>">
-                    <i class="fas fa-shield-alt"></i>
+                <div class="stat-icon green">
+                    <i class="fas fa-user-check"></i>
                 </div>
                 <div class="stat-body">
-                    <div class="stat-label">Status Perilaku</div>
-                    <div class="stat-value">
-                        <?php 
-                            if($total_poin >= 100) echo 'Sangat Berat';
-                            elseif($total_poin >= 50) echo 'Berat';
-                            elseif($total_poin >= 25) echo 'Sedang';
-                            else echo 'Aman (Baik)';
-                        ?>
-                    </div>
-                    <div class="stat-sub">Kategori berdasarkan poin</div>
+                    <div class="stat-label">Bimbingan Konseling</div>
+                    <div class="stat-value"><?php echo $total_bimbingan; ?></div>
+                    <div class="stat-sub">Total sesi bimbingan</div>
                 </div>
             </div>
 

@@ -66,20 +66,18 @@ if ($kelas) {
     }
 }
 
-// 7. QUERY REKAPITULASI POIN KEDISIPLINAN SISWA PERWALIAN
+// 7. QUERY REKAPITULASI KEDISIPLINAN SISWA PERWALIAN
 if ($kelas) {
     $kelas_id       = $kelas['id'];
     $where_siswa    = $filter_siswa_id !== '' ? "AND s.id = '$filter_siswa_id'" : "";
     $query_disiplin = mysqli_query($koneksi, "
         SELECT s.id, s.nisn, s.nama_lengkap, s.jenis_kelamin, 
-               COALESCE(SUM(jp.poin), 0) as total_poin,
                COUNT(cp.id) as total_laporan
         FROM siswa s
         LEFT JOIN catatan_pelanggaran cp ON s.id = cp.siswa_id AND cp.tanggal BETWEEN '$start_date' AND '$end_date'
-        LEFT JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
         WHERE s.kelas_id = '$kelas_id' AND s.status = 'aktif' $where_siswa
         GROUP BY s.id, s.nisn, s.nama_lengkap, s.jenis_kelamin
-        ORDER BY total_poin DESC, total_laporan DESC, s.nama_lengkap ASC
+        ORDER BY total_laporan DESC, s.nama_lengkap ASC
     ");
 } else {
     $query_disiplin = false;
@@ -202,7 +200,7 @@ if ($kelas) {
         <!-- TABEL REKAPITULASI STATUS KEDISIPLINAN SISWA -->
         <div class="data-card">
             <div class="data-card-header">
-                <h2><i class="fas fa-user-shield"></i> Rekapitulasi Poin Kedisiplinan (<?php echo htmlspecialchars($label_semester); ?>)</h2>
+                <h2><i class="fas fa-user-shield"></i> Rekapitulasi Kedisiplinan Siswa (<?php echo htmlspecialchars($label_semester); ?>)</h2>
             </div>
             <div class="table-responsive">
                 <table>
@@ -211,7 +209,6 @@ if ($kelas) {
                             <th style="width: 75px; text-align: center;">No</th>
                             <th>Nama Siswa</th>
                             <th style="text-align: center;">Jumlah Insiden</th>
-                            <th style="text-align: center;">Total Akumulasi Poin</th>
                             <th style="text-align: center;">Status Disiplin</th>
                         </tr>
                     </thead>
@@ -233,28 +230,13 @@ if ($kelas) {
                                 </span>
                             </td>
                             <td style="text-align: center;">
-                                <?php if ($row['total_poin'] >= 50): ?>
-                                    <span class="badge" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                                        <?php echo $row['total_poin']; ?> Poin
-                                    </span>
-                                <?php elseif ($row['total_poin'] > 0): ?>
-                                    <span class="badge badge-warning" style="font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                                        <?php echo $row['total_poin']; ?> Poin
-                                    </span>
-                                <?php else: ?>
-                                    <span class="badge badge-success" style="font-weight: 600; padding: 4px 10px; border-radius: 6px;">
-                                        0 Poin
-                                    </span>
-                                <?php endif; ?>
-                            </td>
-                            <td style="text-align: center;">
                                 <!-- Tingkatan Badge Status Kedisiplinan -->
-                                <?php if ($row['total_poin'] >= 50): ?>
+                                <?php if ($row['total_laporan'] >= 5): ?>
                                     <span class="badge badge-danger"><i class="fas fa-exclamation-circle"></i> Sangat Kritis</span>
-                                <?php elseif ($row['total_poin'] >= 20): ?>
+                                <?php elseif ($row['total_laporan'] >= 3): ?>
                                     <span class="badge badge-warning"><i class="fas fa-exclamation-triangle"></i> Perlu Perhatian</span>
-                                <?php elseif ($row['total_poin'] > 0): ?>
-                                    <span class="badge badge-info" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;"><i class="fas fa-info-circle"></i> Kurang Disiplin</span>
+                                <?php elseif ($row['total_laporan'] > 0): ?>
+                                    <span class="badge badge-info" style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd;"><i class="fas fa-info-circle"></i> Catatan Ringan</span>
                                 <?php else: ?>
                                     <span class="badge badge-success"><i class="fas fa-check-circle"></i> Baik (Disiplin)</span>
                                 <?php endif; ?>

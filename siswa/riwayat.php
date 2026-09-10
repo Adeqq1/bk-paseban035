@@ -45,7 +45,7 @@ if ($semester == '1') {
 // Mengambil seluruh catatan pelanggaran siswa sesuai dengan filter rentang semester & tahun.
 // =========================================================================
 $query_pelanggaran = mysqli_query($koneksi, "
-    SELECT cp.tanggal, jp.nama_pelanggaran, jp.poin, cp.keterangan, cp.pelapor_asli, g.nama_lengkap as nama_wali
+    SELECT cp.tanggal, jp.nama_pelanggaran, cp.keterangan, cp.pelapor_asli, g.nama_lengkap as nama_wali
     FROM catatan_pelanggaran cp
     JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
     LEFT JOIN guru g ON cp.guru_id = g.id
@@ -192,7 +192,7 @@ $query_bimbingan = mysqli_query($koneksi, "
                 </div>
                 <div>
                     <h1 style="margin: 0 0 6px 0; font-size: 1.6rem; font-weight: 700; color: white;">Riwayat & Arsip Saya</h1>
-                    <p style="margin: 0; color: #cbd5e1; font-size: 0.95rem;">Pantau rekam jejak bimbingan konseling dan catatan poin siswa.</p>
+                    <p style="margin: 0; color: #cbd5e1; font-size: 0.95rem;">Pantau rekam jejak bimbingan konseling dan catatan pelanggaran siswa.</p>
                 </div>
             </div>
         </div>
@@ -256,7 +256,6 @@ $query_bimbingan = mysqli_query($koneksi, "
                             <th style="width: 55px; text-align: center;">NO</th>
                             <th>TANGGAL</th>
                             <th>NAMA PELANGGARAN</th>
-                            <th style="text-align: center;">POIN</th>
                             <th>PELAPOR ASLI</th>
                             <th>WALI KELAS</th>
                             <th>KETERANGAN / DETAIL</th>
@@ -272,11 +271,6 @@ $query_bimbingan = mysqli_query($koneksi, "
                             <td style="text-align: center; color: #64748b; font-weight: 400;"><?php echo $no_p++; ?></td>
                             <td><small style="color: #475569; font-weight: 400;"><?php echo date('d/m/Y', strtotime($row['tanggal'])); ?></small></td>
                             <td><span style="color: #334155; font-weight: 400;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></span></td>
-                            <td style="text-align: center;">
-                                <span class="badge" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                                    +<?php echo $row['poin']; ?> Poin
-                                </span>
-                            </td>
                             <td><small style="color: #475569; font-weight: 400;"><?php echo !empty($row['pelapor_asli']) ? htmlspecialchars($row['pelapor_asli']) : '—'; ?></small></td>
                             <td><small style="color: #475569; font-weight: 400;"><?php echo htmlspecialchars($row['nama_wali'] ?? '-'); ?></small></td>
                             <td style="max-width: 240px;">

@@ -31,7 +31,7 @@ $query = mysqli_query($koneksi, "
     SELECT kon.*, s.nama_lengkap as nama_siswa, s.nisn, k.nama_kelas,
            g.nama_lengkap as nama_guru, g.nip as nip_guru,
            wk.nama_lengkap as nama_walikelas, wk.nip as nip_walikelas,
-           jp.kategori, jp.nama_pelanggaran, jp.poin as poin_pelanggaran, cp.keterangan
+           jp.kategori, jp.nama_pelanggaran, cp.keterangan
     FROM konseling kon
     JOIN siswa s ON kon.siswa_id = s.id
     LEFT JOIN kelas k ON s.kelas_id = k.id
@@ -48,20 +48,11 @@ if (!$p) {
     die("Data konseling tidak ditemukan.");
 }
 
-// Menentukan pihak penandatangan surat RPL berdasarkan bobot angka poin pelanggaran yang dilaporkan:
-// - Poin >= 50: Melibatkan Orang Tua / Wali (Tingkat Berat / SP)
-// - Poin 25 - 49 (misal 30 poin): Melibatkan Wali Kelas, Guru BK, dan Siswa (Tingkat Sedang)
-// - Poin < 25: Cukup Guru BK dan Siswa (Tingkat Ringan)
-if ($p['jenis_konseling'] == 'Tindak Lanjut' && isset($p['poin_pelanggaran'])) {
-    $poin_kasus = (int)$p['poin_pelanggaran'];
-    if ($poin_kasus >= 50) {
-        $p['kategori'] = 'Berat';
-    } elseif ($poin_kasus >= 25) {
-        $p['kategori'] = 'Sedang';
-    } elseif ($poin_kasus > 0) {
-        $p['kategori'] = 'Ringan';
-    }
-}
+// Menentukan pihak penandatangan surat RPL berdasarkan kategori pelanggaran yang dilaporkan:
+// - Berat: Melibatkan Orang Tua / Wali (Tingkat Berat / SP)
+// - Sedang: Melibatkan Wali Kelas, Guru BK, dan Siswa (Tingkat Sedang)
+// - Ringan: Cukup Guru BK dan Siswa (Tingkat Ringan)
+// Kategori sudah diambil langsung dari tabel jenis_pelanggaran
 
 // Menentukan Jenis Layanan: jika Tindak Lanjut Pelanggaran dipetakan menjadi 'Konferensi Kasus', 
 // sedangkan jika Bimbingan Mandiri dipetakan menjadi 'Konseling Individu'

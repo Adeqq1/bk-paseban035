@@ -80,31 +80,29 @@ if ($kelas) {
         $end_date   = "$current_tahun-06-30";
     }
 
-    // QUERY STATISTIK 1: Mengambil daftar siswa perwalian beserta total penjumlahan (SUM) poin pelanggaran di semester aktif.
+    // QUERY STATISTIK 1: Mengambil daftar siswa perwalian beserta jumlah catatan pelanggaran di semester aktif.
     $query_siswa = mysqli_query($koneksi, "
-        SELECT s.id, s.nisn, s.nama_lengkap, s.jenis_kelamin, COALESCE(SUM(jp.poin), 0) as total_poin
+        SELECT s.id, s.nisn, s.nama_lengkap, s.jenis_kelamin, COUNT(cp.id) as total_laporan
         FROM siswa s
         LEFT JOIN catatan_pelanggaran cp ON s.id = cp.siswa_id AND cp.tanggal BETWEEN '$start_date' AND '$end_date'
-        LEFT JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
         WHERE s.kelas_id = '$kelas_id' AND s.status = 'aktif'
         GROUP BY s.id, s.nisn, s.nama_lengkap, s.jenis_kelamin
-        ORDER BY total_poin DESC, s.nama_lengkap ASC
+        ORDER BY total_laporan DESC, s.nama_lengkap ASC
     ");
 
-    // QUERY STATISTIK 2: Menghitung total siswa perwalian yang poin pelanggarannya telah mencapai batas kritis (>= 50 poin).
+    // QUERY STATISTIK 2: Menghitung total siswa perwalian yang memiliki >= 3 catatan pelanggaran.
     $query_kritis = mysqli_query($koneksi, "
         SELECT COUNT(*) as total_kritis FROM (
-            SELECT s.id, COALESCE(SUM(jp.poin), 0) as total_poin
+            SELECT s.id, COUNT(cp.id) as total_laporan
             FROM siswa s
             LEFT JOIN catatan_pelanggaran cp ON s.id = cp.siswa_id AND cp.tanggal BETWEEN '$start_date' AND '$end_date'
-            LEFT JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
             WHERE s.kelas_id = '$kelas_id' AND s.status = 'aktif'
             GROUP BY s.id
-            HAVING total_poin >= 50
+            HAVING total_laporan >= 3
         ) as subquery
     ");
-    $data_kritis  = mysqli_fetch_assoc($query_kritis);
-    $total_kritis = $data_kritis['total_kritis'] ?? 0;
+    $row_kritis = mysqli_fetch_assoc($query_kritis);
+    $total_kritis = $row_kritis['total_kritis'] ?? 0;
 
     // QUERY STATISTIK 3: Menghitung total laporan pelanggaran yang telah dibuat/dikirim oleh Wali Kelas ini.
     $q_lapor_count          = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM catatan_pelanggaran WHERE guru_id = '$guru_id'");
@@ -113,7 +111,7 @@ if ($kelas) {
 
     // QUERY STATISTIK 4: Mengambil 5 riwayat laporan pelanggaran terbaru yang dilaporkan oleh Wali Kelas ini beserta status respon Guru BK.
     $query_recent_laporan = mysqli_query($koneksi, "
-        SELECT cp.*, s.nama_lengkap as nama_siswa, s.nisn, jp.nama_pelanggaran, jp.poin, jp.kategori,
+        SELECT cp.*, s.nama_lengkap as nama_siswa, s.nisn, jp.nama_pelanggaran, jp.kategori,
                kon.status as status_bk, kon.solusi as tindakan_solusi
         FROM catatan_pelanggaran cp
         JOIN siswa s ON cp.siswa_id = s.id
@@ -258,15 +256,15 @@ if ($kelas) {
                 </div>
             </div>
 
-            <!-- KARTU 4: Jumlah Siswa dengan Akumulasi Poin Kritis (>= 50 Poin) -->
+            <!-- KARTU 4: Jumlah Siswa Perlu Perhatian (>= 3 Laporan) -->
             <div class="stat-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 18px; border: 1px solid #e2e8f0; border-left: 5px solid #ef4444;">
                 <div style="width: 56px; height: 56px; border-radius: 12px; background: #fef2f2; color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; flex-shrink: 0;">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div>
-                    <span style="display: block; color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Siswa Poin Kritis</span>
+                    <span style="display: block; color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">Perlu Perhatian</span>
                     <span style="display: block; font-size: 1.6rem; font-weight: 800; color: #ef4444; line-height: 1.1;"><?php echo $total_kritis; ?></span>
-                    <span style="display: block; font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">Siswa Poin &ge; 50</span>
+                    <span style="display: block; font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">Siswa &ge; 3 Laporan</span>
                 </div>
             </div>
         </div>

@@ -42,48 +42,6 @@ if (isset($_POST['tambah'])) {
                   VALUES ('$siswa_id', '$pelanggaran_id', '$guru_id', '$tanggal', '$keterangan', NULLIF('$pelapor_asli', ''))";
         
         if (mysqli_query($koneksi, $query)) {
-            $report_id = mysqli_insert_id($koneksi);
-            
-            // Cek kategori jenis pelanggaran untuk otomatisasi penyelesaian pelanggaran ringan (1x & 2x)
-            $query_jp = mysqli_query($koneksi, "SELECT nama_pelanggaran, kategori, poin FROM jenis_pelanggaran WHERE id = '$pelanggaran_id'");
-            $jp = mysqli_fetch_assoc($query_jp);
-            $kategori = $jp['kategori'] ?? '';
-            $nama_pelanggaran = $jp['nama_pelanggaran'] ?? '';
-            $poin_pelanggaran = (int)($jp['poin'] ?? 0);
-
-            if ($kategori === 'Ringan' && $poin_pelanggaran <= 20) {
-                // Hitung frekuensi laporan pelanggaran sejenis untuk siswa ini di semester berjalan
-                $current_semester = date('m') >= 7 ? '1' : '2';
-                $current_tahun = date('Y');
-                $sem_start = ($current_semester == '1') ? "$current_tahun-07-01" : "$current_tahun-01-01";
-                $sem_end = ($current_semester == '1') ? "$current_tahun-12-31" : "$current_tahun-06-30";
-
-                $query_count = mysqli_query($koneksi, "
-                    SELECT COUNT(cp.id) as total 
-                    FROM catatan_pelanggaran cp
-                    JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
-                    WHERE cp.siswa_id = '$siswa_id' 
-                      AND jp.kategori = 'Ringan' 
-                      AND jp.poin <= 20
-                      AND cp.tanggal BETWEEN '$sem_start' AND '$sem_end'
-                ");
-                $row_count = mysqli_fetch_assoc($query_count);
-                $count_laporan = $row_count['total'] ?? 1;
-
-                if ($count_laporan <= 2) {
-                    // Selesaikan secara otomatis oleh sistem (pembinaan Wali Kelas)
-                    $masalah_auto = mysqli_real_escape_string($koneksi, "Siswa melakukan pelanggaran ringan: " . $nama_pelanggaran . " (Laporan ke-" . $count_laporan . ").");
-                    $solusi_auto = mysqli_real_escape_string($koneksi, "Telah diberikan pembinaan langsung oleh Wali Kelas (Pembinaan ke-" . $count_laporan . ").");
-                    $nama_pelanggaran_esc = mysqli_real_escape_string($koneksi, $nama_pelanggaran);
-                    
-                    $query_auto_konseling = "
-                        INSERT INTO konseling (siswa_id, guru_id, catatan_pelanggaran_id, tanggal, masalah, solusi, status, jenis_konseling, topik_permasalahan)
-                        VALUES ('$siswa_id', '$guru_id', '$report_id', '$tanggal', '$masalah_auto', '$solusi_auto', 'Selesai', 'Tindak Lanjut', '$nama_pelanggaran_esc')
-                    ";
-                    mysqli_query($koneksi, $query_auto_konseling);
-                }
-            }
-
             $msg = "success_tambah";
         } else {
             $msg = "error";
@@ -115,7 +73,7 @@ $where_siswa = $filter_siswa_id ? "AND cp.siswa_id = '$filter_siswa_id'" : "";
 // Jalankan Query SQL Penarikan Data Catatan Pelanggaran
 $query_catatan = mysqli_query($koneksi, "
     SELECT cp.*, s.nama_lengkap as nama_siswa, s.nisn, k.nama_kelas, 
-           jp.nama_pelanggaran, jp.poin, jp.kategori,
+           jp.nama_pelanggaran, jp.kategori,
            g.nama_lengkap as nama_guru, cp.pelapor_asli
     FROM catatan_pelanggaran cp
     JOIN siswa s ON cp.siswa_id = s.id
@@ -285,7 +243,6 @@ $data_pelanggaran = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran ORDE
                             <th>Nama Siswa</th>
                             <th>Kelas</th>
                             <th>Pelanggaran</th>
-                            <th style="text-align: center;">Poin</th>
                             <th>Wali Kelas</th>
                             <th>Pelapor Asli</th>
                         </tr>
@@ -329,17 +286,10 @@ $data_pelanggaran = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran ORDE
                                 <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($row['kategori']); ?></span>
                             </td>
                             
-                            <!-- Kolom 7: Bobot Poin Pelanggaran -->
-                            <td style="text-align: center;">
-                                <span class="badge" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; font-size: 0.78rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;">
-                                    +<?php echo $row['poin']; ?> Poin
-                                </span>
-                            </td>
-                            
-                            <!-- Kolom 8: Wali Kelas Pengampu -->
+                            <!-- Kolom 7: Wali Kelas Pengampu -->
                             <td><small style="color: #475569; font-weight: 400;"><?php echo htmlspecialchars($row['nama_guru']); ?></small></td>
                             
-                            <!-- Kolom 9: Pelapor Asli Kasus -->
+                            <!-- Kolom 8: Pelapor Asli Kasus -->
                             <td><small style="color: #64748b; font-weight: 400;"><?php echo !empty($row['pelapor_asli']) ? htmlspecialchars($row['pelapor_asli']) : '—'; ?></small></td>
                         </tr>
                         <?php 
@@ -347,7 +297,7 @@ $data_pelanggaran = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran ORDE
                         else:
                         ?>
                         <tr>
-                            <td colspan="9" style="text-align: center; color: #94a3b8; padding: 2rem;">Tidak ada data catatan pelanggaran pada periode ini.</td>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">Belum ada catatan pelanggaran tersimpan.</td>
                         </tr>
                         <?php endif; ?>
                     </tbody>
@@ -359,29 +309,27 @@ $data_pelanggaran = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran ORDE
     <!-- =================================================================== -->
     <!-- MODAL DIALOG POPUP: INPUT PELANGGARAN BARU                          -->
     <!-- =================================================================== -->
-    <div id="modalTambah" class="modal">
-        <div class="modal-content">
+    <div id="modalPelanggaran" class="modal">
+        <div class="modal-content" style="max-width: 540px; width: 92%;">
             <div class="modal-header">
-                <div>
-                    <h2 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">Input Pelanggaran Baru</h2>
-                    <p style="font-size: 0.85rem; color: #64748b; margin: 0;">Rekam catatan pelanggaran siswa.</p>
-                </div>
-                <div class="close" onclick="closeModal('modalTambah')">&#x2715;</div>
+                <h2><i class="fas fa-plus-circle" style="color: var(--primary);"></i> Catat Pelanggaran Siswa</h2>
+                <span class="close" onclick="closeModal('modalPelanggaran')">&times;</span>
             </div>
             <!-- Form Input Pelanggaran -->
             <form action="pelanggaran.php" method="POST">
+                <input type="hidden" name="action" value="tambah">
                 <div class="form-group" style="margin-bottom: 1.2rem;">
                     <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.825rem; color: #475569;">
-                        <i class="fas fa-user" style="color: var(--primary);"></i> Pilih Siswa
+                        <i class="fas fa-user-graduate" style="color: var(--primary);"></i> Pilih Siswa
                     </label>
-                    <select name="siswa_id" class="form-control" required style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <select name="siswa_id" class="form-control" required style="width: 100%; border-radius: 8px; font-size: 0.875rem;">
                         <option value="">-- Pilih Siswa --</option>
                         <?php 
                         mysqli_data_seek($data_siswa, 0);
-                        while($ds = mysqli_fetch_assoc($data_siswa)): 
+                        while($s = mysqli_fetch_assoc($data_siswa)): 
                         ?>
-                            <option value="<?php echo $ds['id']; ?>">
-                                <?php echo htmlspecialchars($ds['nama_lengkap']) . ' (' . ($ds['nama_kelas'] ?? 'Tanpa Kelas') . ')'; ?>
+                            <option value="<?php echo $s['id']; ?>">
+                                <?php echo htmlspecialchars($s['nama_lengkap']); ?> (NISN: <?php echo $s['nisn']; ?> - Kelas: <?php echo htmlspecialchars($s['nama_kelas'] ?? '-'); ?>)
                             </option>
                         <?php endwhile; ?>
                     </select>
@@ -389,16 +337,16 @@ $data_pelanggaran = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran ORDE
 
                 <div class="form-group" style="margin-bottom: 1.2rem;">
                     <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.825rem; color: #475569;">
-                        <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Jenis Pelanggaran
+                        <i class="fas fa-exclamation-triangle" style="color: var(--primary);"></i> Jenis Pelanggaran
                     </label>
-                    <select name="pelanggaran_id" class="form-control" required style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    <select name="pelanggaran_id" class="form-control" required style="width: 100%; border-radius: 8px; font-size: 0.875rem;">
                         <option value="">-- Pilih Pelanggaran --</option>
                         <?php 
                         mysqli_data_seek($data_pelanggaran, 0);
                         while($dp = mysqli_fetch_assoc($data_pelanggaran)): 
                         ?>
                             <option value="<?php echo $dp['id']; ?>">
-                                [<?php echo $dp['kategori']; ?>] <?php echo htmlspecialchars($dp['nama_pelanggaran']) . ' (+' . $dp['poin'] . ' Poin)'; ?>
+                                [<?php echo $dp['kategori']; ?>] <?php echo htmlspecialchars($dp['nama_pelanggaran']); ?>
                             </option>
                         <?php endwhile; ?>
                     </select>

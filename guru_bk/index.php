@@ -19,16 +19,15 @@ $guru_id = $guru ? $guru['id'] : 0;
 // BAGIAN 2: PENGAMBILAN DATA STATISTIK SECARA REAL-TIME DARI DATABASE
 // ==============================================================================
 
-// 1. Menghitung jumlah siswa yang memiliki poin pelanggaran tinggi (Kritis: >= 50 poin)
+// 1. Menghitung jumlah siswa yang memiliki banyak pelanggaran (Perhatian Khusus: >= 3 pelanggaran)
 $query_siswa_kritis = mysqli_query($koneksi, "
     SELECT COUNT(*) as total_kritis FROM (
-        SELECT s.id, SUM(jp.poin) as total_poin
+        SELECT s.id, COUNT(cp.id) as total_laporan
         FROM catatan_pelanggaran cp
         JOIN siswa s ON cp.siswa_id = s.id
-        JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
         WHERE s.status = 'aktif'
         GROUP BY s.id
-        HAVING total_poin >= 50
+        HAVING total_laporan >= 3
     ) as subquery
 ");
 $siswa_kritis = mysqli_fetch_assoc($query_siswa_kritis)['total_kritis'] ?? 0;
@@ -86,7 +85,7 @@ $foto_guru_url = $foto_guru_exists ? '../assets/uploads/profil/' . htmlspecialch
             <li><a href="daftar_panggilan.php"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php"><i class="fas fa-chart-line"></i> Rekap Poin</a></li>
+            <li><a href="rekap_poin.php"><i class="fas fa-book"></i> Buku Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>

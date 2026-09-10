@@ -19,11 +19,10 @@ $siswa = null;
 
 if (!empty($siswa_param)) {
     $q_siswa = mysqli_query($koneksi, "
-        SELECT s.*, k.nama_kelas, COALESCE(SUM(jp.poin), 0) as total_poin 
+        SELECT s.*, k.nama_kelas, COUNT(cp.id) as total_laporan 
         FROM siswa s 
         LEFT JOIN kelas k ON s.kelas_id = k.id
         LEFT JOIN catatan_pelanggaran cp ON s.id = cp.siswa_id
-        LEFT JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
         WHERE s.id = '$siswa_param' OR s.nisn = '$siswa_param'
         GROUP BY s.id
     ");
@@ -35,11 +34,10 @@ if (!empty($siswa_param)) {
 // Ambil daftar seluruh siswa untuk pilihan dropdown jika diperlukan
 $siswa_list = [];
 $q_list = mysqli_query($koneksi, "
-    SELECT s.*, k.nama_kelas, COALESCE(SUM(jp.poin), 0) as total_poin 
+    SELECT s.*, k.nama_kelas, COUNT(cp.id) as total_laporan 
     FROM siswa s 
     LEFT JOIN kelas k ON s.kelas_id = k.id
     LEFT JOIN catatan_pelanggaran cp ON s.id = cp.siswa_id
-    LEFT JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
     GROUP BY s.id
     ORDER BY s.nama_lengkap ASC
 ");
@@ -117,7 +115,7 @@ if (isset($_POST['simpan'])) {
             <li><a href="daftar_panggilan.php" class="active"><i class="fas fa-envelope-open-text"></i> Panggilan Ortu</a></li>
             <li><a href="alih_kasus.php"><i class="fas fa-share-square"></i> Alih Tangan Kasus</a></li>
             <li><a href="kunjungan_rumah.php"><i class="fas fa-home"></i> Kunjungan Rumah</a></li>
-            <li><a href="rekap_poin.php"><i class="fas fa-chart-line"></i> Rekap Poin</a></li>
+            <li><a href="rekap_poin.php"><i class="fas fa-book"></i> Buku Kasus</a></li>
             <li><a href="profil.php"><i class="fas fa-user-cog"></i> Profil & Sandi</a></li>
             <li><a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
@@ -152,8 +150,8 @@ if (isset($_POST['simpan'])) {
 
         <?php if ($siswa): ?>
         <div class="data-card" style="margin-bottom: 2rem; border: 1px solid #fecaca; border-left: 5px solid #ef4444; background: #fef2f2; border-radius: 12px; padding: 1.5rem;">
-            <h3 style="color: #b91c1c; margin-top: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1rem;"><i class="fas fa-exclamation-triangle"></i> Peringatan Poin Tinggi</h3>
-            <p style="margin-bottom: 0; color: #7f1d1d; font-size: 0.95rem;">Siswa <strong><?php echo htmlspecialchars($siswa['nama_lengkap']); ?></strong> (<?php echo htmlspecialchars($siswa['nama_kelas'] ?? '-'); ?>) saat ini memiliki akumulasi <strong style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 6px;"><?php echo $siswa['total_poin']; ?> poin</strong> pelanggaran.</p>
+            <h3 style="color: #b91c1c; margin-top: 0; display: flex; align-items: center; gap: 8px; font-size: 1.1rem;"><i class="fas fa-exclamation-triangle"></i> Perhatian</h3>
+            <p style="margin-bottom: 0; color: #7f1d1d; font-size: 0.95rem;">Siswa <strong><?php echo htmlspecialchars($siswa['nama_lengkap']); ?></strong> (<?php echo htmlspecialchars($siswa['nama_kelas'] ?? '-'); ?>) memiliki <strong style="background: #ef4444; color: white; padding: 2px 8px; border-radius: 6px;"><?php echo $siswa['total_laporan']; ?> pelanggaran</strong> tercatat.</p>
         </div>
         <?php endif; ?>
 
@@ -169,7 +167,7 @@ if (isset($_POST['simpan'])) {
                             <option value="">-- Cari & Pilih Siswa --</option>
                             <?php foreach ($siswa_list as $sl): ?>
                                 <option value="<?php echo $sl['id']; ?>">
-                                    [<?php echo htmlspecialchars($sl['nama_kelas'] ?? '-'); ?>] <?php echo htmlspecialchars($sl['nama_lengkap']); ?> (<?php echo $sl['total_poin']; ?> Poin)
+                                    [<?php echo htmlspecialchars($sl['nama_kelas'] ?? '-'); ?>] <?php echo htmlspecialchars($sl['nama_lengkap']); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
@@ -216,7 +214,7 @@ if (isset($_POST['simpan'])) {
                     <label style="display: block; margin-bottom: 8px; color: #475569; font-weight: 600; font-size: 0.85rem; letter-spacing: 0.025em;">ALASAN PEMANGGILAN</label>
                     <textarea name="alasan" class="form-control" rows="4" style="width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid #cbd5e1; background-color: #f8fafc;" required><?php 
                         if ($siswa) {
-                            echo "Koordinasi terkait akumulasi poin pelanggaran siswa yang telah mencapai " . $siswa['total_poin'] . " poin. Mohon kehadiran orang tua/wali untuk membicarakan pembinaan siswa ke depan.";
+                            echo "Koordinasi terkait pelanggaran siswa yang tercatat. Mohon kehadiran orang tua/wali untuk membicarakan pembinaan siswa ke depan.";
                         } else {
                             echo "Koordinasi terkait pembinaan dan perkembangan kedisiplinan siswa di sekolah. Mohon kehadiran orang tua/wali untuk membicarakan langkah pembinaan ke depan.";
                         }
