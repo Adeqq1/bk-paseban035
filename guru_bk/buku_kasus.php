@@ -311,7 +311,6 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
                             <th style="width: 180px;">Bentuk Pelanggaran</th>
                             <th style="width: 180px;">Tindak Lanjut</th>
                             <th>Catatan</th>
-                            <th style="text-align: center; width: 130px;">Panggilan Ortu</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -380,23 +379,12 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
                             <td style="vertical-align: middle;" class="catatan-cell">
                                 <div style="font-size: 0.85rem; color: #475569;"><?php echo htmlspecialchars($catatan); ?></div>
                             </td>
-                            <td style="text-align: center; vertical-align: middle;">
-                                <?php if ($total_kasus >= 3): ?>
-                                    <a href="buat_panggilan.php?id=<?php echo $row['siswa_id']; ?>" class="btn" style="background: #dc2626; color: white; font-size: 0.75rem; padding: 5px 10px; border-radius: 6px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Siswa telah melakukan <?php echo $total_kasus; ?>x pelanggaran. Terbitkan Surat Panggilan.">
-                                        <i class="fas fa-envelope-open-text"></i> Panggil Ortu
-                                    </a>
-                                <?php else: ?>
-                                    <a href="buat_panggilan.php?id=<?php echo $row['siswa_id']; ?>" class="btn" style="background: #f59e0b; color: white; font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
-                                        <i class="fas fa-envelope"></i> Panggil
-                                    </a>
-                                <?php endif; ?>
-                            </td>
                         </tr>
                         <?php 
                         endwhile; 
                         if(!$has_data): ?>
                             <tr>
-                                <td colspan="8" style="text-align: center; padding: 3rem !important;">
+                                <td colspan="7" style="text-align: center; padding: 3rem !important;">
                                     <div style="color: #94a3b8;">
                                         <i class="fas fa-inbox" style="font-size: 2.5rem; margin-bottom: 10px; display: block;"></i>
                                         <span style="font-size: 0.95rem;">Belum ada catatan kasus siswa pada periode ini.</span>

@@ -37,6 +37,11 @@ if (!$report) {
     exit();
 }
 
+$s_id = $report['siswa_id'];
+$q_count_laporan = mysqli_query($koneksi, "SELECT COUNT(id) as total_laporan FROM catatan_pelanggaran WHERE siswa_id = '$s_id'");
+$r_count_laporan = mysqli_fetch_assoc($q_count_laporan);
+$total_laporan_siswa = (int)($r_count_laporan['total_laporan'] ?? 1);
+
 // Proses Simpan Bimbingan
 if (isset($_POST['simpan'])) {
     $solusi = mysqli_real_escape_string($koneksi, $_POST['solusi']);
@@ -127,6 +132,23 @@ if (isset($_POST['simpan'])) {
         <?php if (isset($error)): ?>
             <div class="alert badge-danger" style="margin-bottom: 1.5rem; padding: 1rem; border-radius: 8px; background: #fee2e2; color: #991b1b; display: block; border: 1px solid #fee2e2;">
                 <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($total_laporan_siswa >= 2): ?>
+            <div style="background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%); border: 1px solid #fecaca; border-left: 6px solid #dc2626; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08);">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="background: #dc2626; color: white; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin: 0 0 3px 0; color: #991b1b; font-weight: 800; font-size: 1rem;">PERINGATAN: PELANGGARAN BERULANG (<?php echo $total_laporan_siswa; ?>x LAPORAN)</h4>
+                        <p style="margin: 0; color: #7f1d1d; font-size: 0.875rem;">Siswa <strong><?php echo htmlspecialchars($report['nama_siswa']); ?></strong> tercatat melakukan pelanggaran sebanyak <strong><?php echo $total_laporan_siswa; ?> kali</strong>. Disarankan menerbitkan Surat Panggilan Orang Tua.</p>
+                    </div>
+                </div>
+                <a href="buat_panggilan.php?id=<?php echo $s_id; ?>" target="_blank" class="btn" style="background: #dc2626; color: white; text-decoration: none; padding: 0.65rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25); border: none;">
+                    <i class="fas fa-envelope-open-text"></i> Terbitkan Surat Panggilan
+                </a>
             </div>
         <?php endif; ?>
 

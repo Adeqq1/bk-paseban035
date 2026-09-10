@@ -82,6 +82,18 @@ $query_panggilan = mysqli_query($koneksi, "
     WHERE p.guru_id = '$guru_id' $status_filter
     ORDER BY p.tanggal_panggilan DESC
 ");
+
+// Query rekomendasi siswa pelanggaran berulang (>= 2 kali)
+$query_rekomendasi_panggilan = mysqli_query($koneksi, "
+    SELECT s.id as siswa_id, s.nama_lengkap, s.nisn, k.nama_kelas, COUNT(cp.id) as total_laporan,
+           MAX(cp.tanggal) as tanggal_terakhir
+    FROM siswa s
+    JOIN catatan_pelanggaran cp ON s.id = cp.siswa_id
+    LEFT JOIN kelas k ON s.kelas_id = k.id
+    GROUP BY s.id
+    HAVING total_laporan >= 2
+    ORDER BY total_laporan DESC, tanggal_terakhir DESC
+");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -352,6 +364,53 @@ $query_panggilan = mysqli_query($koneksi, "
             <div style="background-color: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #ef4444; color: #991b1b; padding: 1rem 1.25rem; border-radius: 6px; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                 <i class="fas fa-trash-alt" style="font-size: 1.1rem; color: #ef4444;"></i>
                 Data panggilan orang tua berhasil dihapus!
+            </div>
+        <?php endif; ?>
+
+        <?php if ($query_rekomendasi_panggilan && mysqli_num_rows($query_rekomendasi_panggilan) > 0): ?>
+            <!-- Kartu Notifikasi Siswa Pelanggaran Berulang -->
+            <div class="data-card" style="background: linear-gradient(135deg, #fff5f5 0%, #fef2f2 100%); border: 1px solid #fecaca; border-left: 6px solid #dc2626; border-radius: 12px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.08); padding: 1.5rem; margin-bottom: 2rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem; border-bottom: 1px dashed #fca5a5; padding-bottom: 0.75rem;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="background: #dc2626; color: white; width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <h3 style="margin: 0; color: #991b1b; font-size: 1.05rem; font-weight: 800;">PERINTAH PENERBITAN SURAT PANGGILAN ORTU</h3>
+                            <p style="margin: 2px 0 0; color: #7f1d1d; font-size: 0.85rem;">Siswa di bawah ini telah melakukan pelanggaran berulang kali (≥ 2 kali) dan WAJIB diterbitkan Surat Panggilan Orang Tua.</p>
+                        </div>
+                    </div>
+                    <span class="badge" style="background: #dc2626; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8rem;">
+                        <?php echo mysqli_num_rows($query_rekomendasi_panggilan); ?> Siswa Terdeteksi
+                    </span>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+                    <?php while ($r_p = mysqli_fetch_assoc($query_rekomendasi_panggilan)): ?>
+                        <div style="background: white; border: 1px solid #fee2e2; border-radius: 10px; padding: 1rem; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 6px;">
+                                    <span style="font-weight: 700; color: #1e293b; font-size: 0.95rem; text-transform: capitalize;"><?php echo htmlspecialchars($r_p['nama_lengkap']); ?></span>
+                                    <?php if ($r_p['total_laporan'] >= 3): ?>
+                                        <span class="badge" style="background: #fee2e2; color: #dc2626; font-size: 0.72rem; padding: 3px 8px; font-weight: 800; border-radius: 4px; border: 1px solid #fca5a5;">
+                                            🚨 <?php echo $r_p['total_laporan']; ?>x Kasus
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge" style="background: #fef3c7; color: #b45309; font-size: 0.72rem; padding: 3px 8px; font-weight: 800; border-radius: 4px; border: 1px solid #fde68a;">
+                                            ⚠️ <?php echo $r_p['total_laporan']; ?>x Kasus
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+                                    Kelas: <strong><?php echo htmlspecialchars($r_p['nama_kelas'] ?? '-'); ?></strong> | Terakhir: <?php echo date('d/m/Y', strtotime($r_p['tanggal_terakhir'])); ?>
+                                </div>
+                            </div>
+                            <a href="buat_panggilan.php?id=<?php echo $r_p['siswa_id']; ?>" class="btn" style="background: #dc2626; color: white; text-decoration: none; padding: 7px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;" onmouseover="this.style.background='#b91c1c'" onmouseout="this.style.background='#dc2626'">
+                                <i class="fas fa-envelope-open-text"></i> Terbitkan Surat Panggilan
+                            </a>
+                        </div>
+                    <?php endwhile; ?>
+                </div>
             </div>
         <?php endif; ?>
 

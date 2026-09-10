@@ -132,15 +132,17 @@ $tanggal_cetak = date('d') . ' ' . $bulan_map[(int)date('m')] . ' ' . date('Y');
         
         /* Tanda Tangan */
         .signature-area {
-            margin-top: 35px;
+            margin-top: 25px;
             text-align: right;
-            padding-right: 40px;
+            padding-right: 25px;
             font-family: 'Times New Roman', Times, serif;
             font-size: 12pt;
             line-height: 1.5;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
         }
         .signature-area p { margin: 2px 0; font-size: 12pt; font-family: 'Times New Roman', Times, serif; line-height: 1.5; }
-        .signature-area .name { font-weight: bold; text-decoration: underline; margin-top: 60px; font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.5; }
+        .signature-area .name { font-weight: bold; text-decoration: underline; margin-top: 45px; font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.5; }
         .signature-area .nip { font-size: 12pt; font-family: 'Times New Roman', Times, serif; line-height: 1.5; }
         
         /* Print */
@@ -275,7 +277,7 @@ $tanggal_cetak = date('d') . ' ' . $bulan_map[(int)date('m')] . ' ' . date('Y');
     </table>
 
     <!-- Tanda Tangan -->
-    <div class="signature-area">
+    <div class="signature-area" style="page-break-inside: avoid; break-inside: avoid;">
         <p>Lubuk Landai, <?php echo $tanggal_cetak; ?></p>
         <p>Guru Bimbingan Konseling,</p>
         <p class="name"><?php echo htmlspecialchars($guru['nama_lengkap'] ?? 'Guru BK'); ?></p>

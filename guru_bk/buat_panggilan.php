@@ -167,7 +167,7 @@ if (isset($_POST['simpan'])) {
                             <option value="">-- Cari & Pilih Siswa --</option>
                             <?php foreach ($siswa_list as $sl): ?>
                                 <option value="<?php echo $sl['id']; ?>">
-                                    [<?php echo htmlspecialchars($sl['nama_kelas'] ?? '-'); ?>] <?php echo htmlspecialchars($sl['nama_lengkap']); ?>
+                                    [<?php echo htmlspecialchars($sl['nama_kelas'] ?? '-'); ?>] <?php echo htmlspecialchars($sl['nama_lengkap']); ?> <?php if ($sl['total_laporan'] >= 3): ?>-- 🚨 WAJIB PANGGIL (<?php echo $sl['total_laporan']; ?>x Kasus)<?php elseif ($sl['total_laporan'] == 2): ?>-- ⚠️ BERULANG (2x Kasus)<?php endif; ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
