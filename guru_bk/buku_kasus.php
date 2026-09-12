@@ -337,14 +337,16 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
                             $thn = date('Y', strtotime($row['tanggal']));
                             $tanggal_formatted = "$hari, $tgl $bln $thn";
                             
-                            // Tentukan tindak lanjut
+                            // Tentukan tindak lanjut dan catatan
                             $tindak_lanjut = $row['tindak_lanjut'] ?? '';
                             if (empty($tindak_lanjut)) {
                                 $tindak_lanjut = '<span class="badge" style="background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; font-size: 0.75rem; padding: 3px 8px;"><i class="fas fa-clock"></i> Belum ditindak lanjuti</span>';
+                                $catatan = '<span style="color:#94a3b8; font-style:italic;">Belum ada catatan</span>';
+                            } else {
+                                $tindak_lanjut = htmlspecialchars($tindak_lanjut);
+                                $catatan_val = !empty($row['catatan_konseling']) ? $row['catatan_konseling'] : ($row['keterangan'] ?? '-');
+                                $catatan = htmlspecialchars($catatan_val);
                             }
-                            
-                            // Catatan
-                            $catatan = $row['keterangan'] ?? '';
                             $total_kasus = (int)($row['total_kasus_siswa'] ?? 1);
                         ?>
                         <tr>
@@ -377,7 +379,7 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
                                 <?php echo $tindak_lanjut; ?>
                             </td>
                             <td style="vertical-align: middle;" class="catatan-cell">
-                                <div style="font-size: 0.85rem; color: #475569;"><?php echo htmlspecialchars($catatan); ?></div>
+                                <div style="font-size: 0.85rem; color: #475569;"><?php echo $catatan; ?></div>
                             </td>
                         </tr>
                         <?php 

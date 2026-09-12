@@ -301,8 +301,8 @@ if ($selected_siswa_id) {
                                 <tr>
                                     <th>Tanggal</th>
                                     <th>Jenis Layanan</th>
-                                    <th>Masalah / Topik</th>
-                                    <th>Hasil / Solusi</th>
+                                    <th>Tindak Lanjut</th>
+                                    <th>Catatan</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -83,13 +83,14 @@ $query_panggilan = mysqli_query($koneksi, "
     ORDER BY p.tanggal_panggilan DESC
 ");
 
-// Query rekomendasi siswa pelanggaran berulang (>= 2 kali)
+// Query rekomendasi siswa pelanggaran berulang (>= 2 kali) yang BELUM diterbitkan surat panggilan
 $query_rekomendasi_panggilan = mysqli_query($koneksi, "
     SELECT s.id as siswa_id, s.nama_lengkap, s.nisn, k.nama_kelas, COUNT(cp.id) as total_laporan,
            MAX(cp.tanggal) as tanggal_terakhir
     FROM siswa s
     JOIN catatan_pelanggaran cp ON s.id = cp.siswa_id
     LEFT JOIN kelas k ON s.kelas_id = k.id
+    WHERE s.id NOT IN (SELECT DISTINCT siswa_id FROM panggilan_orang_tua)
     GROUP BY s.id
     HAVING total_laporan >= 2
     ORDER BY total_laporan DESC, tanggal_terakhir DESC

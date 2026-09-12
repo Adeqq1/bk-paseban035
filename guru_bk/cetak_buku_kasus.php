@@ -244,13 +244,14 @@ $tanggal_cetak = date('d') . ' ' . $bulan_map[(int)date('m')] . ' ' . date('Y');
                 $bln = $bulan_map[(int)date('m', strtotime($row['tanggal']))];
                 $thn = date('Y', strtotime($row['tanggal']));
                 
-                // Tindak lanjut
-                $tindak_lanjut = $row['tindak_lanjut'] ?? '-';
-                if (empty(trim($tindak_lanjut))) $tindak_lanjut = '-';
-                
-                // Catatan
-                $catatan = $row['keterangan'] ?? '-';
-                if (empty(trim($catatan))) $catatan = '-';
+                // Tindak lanjut & Catatan
+                $tindak_lanjut = $row['tindak_lanjut'] ?? '';
+                if (empty(trim($tindak_lanjut))) {
+                    $tindak_lanjut = 'Belum ditindak lanjuti';
+                    $catatan = '-';
+                } else {
+                    $catatan = !empty($row['catatan_konseling']) ? $row['catatan_konseling'] : ($row['keterangan'] ?? '-');
+                }
             ?>
             <tr>
                 <td class="center"><?php echo $no++; ?></td>

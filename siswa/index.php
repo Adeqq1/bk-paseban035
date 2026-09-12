@@ -21,7 +21,7 @@ $query_siswa = mysqli_query($koneksi, "
     WHERE s.user_id = '$user_id'
 ");
 $siswa = mysqli_fetch_assoc($query_siswa);
-$siswa_id = $siswa['id'];
+$siswa_id = $siswa['id'] ?? 0;
 $foto_siswa = !empty($siswa['foto']) ? $siswa['foto'] : ($siswa['user_foto'] ?? '');
 $foto_siswa_exists = !empty($foto_siswa) && file_exists(__DIR__ . '/../assets/uploads/profil/' . $foto_siswa);
 if ($foto_siswa_exists) {
@@ -39,7 +39,7 @@ $total_pelanggaran = mysqli_fetch_assoc($query_pelanggaran)['total'] ?? 0;
 
 $query_bimbingan = mysqli_query($koneksi, "
     SELECT COUNT(*) as total 
-    FROM bimbingan 
+    FROM konseling 
     WHERE siswa_id = '$siswa_id'
 ");
 $total_bimbingan = mysqli_fetch_assoc($query_bimbingan)['total'] ?? 0;

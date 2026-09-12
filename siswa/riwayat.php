@@ -312,8 +312,8 @@ $query_bimbingan = mysqli_query($koneksi, "
                             <th style="width: 55px; text-align: center;">NO</th>
                             <th>TANGGAL SESI</th>
                             <th>JENIS KONSELING</th>
-                            <th>POKOK MASALAH / TOPIK</th>
-                            <th>HASIL & SOLUSI KONSELING</th>
+                            <th>TINDAK LANJUT</th>
+                            <th>CATATAN</th>
                         </tr>
                     </thead>
                     <tbody>

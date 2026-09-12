@@ -325,8 +325,8 @@ $res_bimbingan = mysqli_query($koneksi, "
                 <th style="width: 5%; text-align: center;">No</th>
                 <th style="width: 15%; text-align: center;">Tanggal</th>
                 <th style="width: 20%; text-align: center;">Jenis Layanan</th>
-                <th style="width: 35%;">Masalah / Topik</th>
-                <th style="width: 25%;">Hasil / Solusi</th>
+                <th style="width: 35%;">Tindak Lanjut</th>
+                <th style="width: 25%;">Catatan</th>
             </tr>
         </thead>
         <tbody>
