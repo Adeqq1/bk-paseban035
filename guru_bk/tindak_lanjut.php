@@ -23,7 +23,7 @@ $report_id = mysqli_real_escape_string($koneksi, $_GET['id']);
 
 // Ambil detail laporan
 $query_report = mysqli_query($koneksi, "
-    SELECT cp.*, s.nama_lengkap as nama_siswa, jp.nama_pelanggaran, g.nama_lengkap as nama_pelapor
+    SELECT cp.*, s.nama_lengkap as nama_siswa, jp.nama_pelanggaran, jp.kategori, g.nama_lengkap as nama_pelapor
     FROM catatan_pelanggaran cp
     JOIN siswa s ON cp.siswa_id = s.id
     JOIN jenis_pelanggaran jp ON cp.pelanggaran_id = jp.id
@@ -162,7 +162,19 @@ if (isset($_POST['simpan'])) {
                 <div style="display: flex; margin-bottom: 12px; align-items: center;">
                     <div style="width: 160px; font-weight: 600; color: #475569;">Pelanggaran</div>
                     <div style="color: #1e293b; display: flex; align-items: center; gap: 8px;">
-                        : <?php echo $report['nama_pelanggaran']; ?> 
+                        : <?php 
+                        $kat = $report['kategori'] ?? 'Ringan';
+                        $kat_bg = '#f0fdf4'; $kat_color = '#16a34a'; $kat_border = '#bbf7d0';
+                        if ($kat == 'Sedang') {
+                            $kat_bg = '#fffbeb'; $kat_color = '#d97706'; $kat_border = '#fde68a';
+                        } elseif ($kat == 'Berat') {
+                            $kat_bg = '#fef2f2'; $kat_color = '#dc2626'; $kat_border = '#fecaca';
+                        }
+                        ?>
+                        <span class="badge" style="font-size: 0.75rem; padding: 3px 8px; font-weight: 700; background: <?php echo $kat_bg; ?>; color: <?php echo $kat_color; ?>; border-radius: 4px; border: 1px solid <?php echo $kat_border; ?>;">
+                            <?php echo htmlspecialchars($kat); ?>
+                        </span>
+                        <span><?php echo htmlspecialchars($report['nama_pelanggaran']); ?></span>
                     </div>
                 </div>
                 <div style="display: flex; margin-bottom: 12px;">

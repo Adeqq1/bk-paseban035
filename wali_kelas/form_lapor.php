@@ -43,12 +43,40 @@ if (isset($_POST['lapor'])) {
     $pelanggaran_id = mysqli_real_escape_string($koneksi, $_POST['pelanggaran_id']);
     $tanggal        = mysqli_real_escape_string($koneksi, $_POST['tanggal']);
     $keterangan     = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
+    $tindak_lanjut  = isset($_POST['tindak_lanjut']) ? mysqli_real_escape_string($koneksi, $_POST['tindak_lanjut']) : '';
+
+    // Ambil detail kategori & nama pelanggaran
+    $q_jp = mysqli_query($koneksi, "SELECT nama_pelanggaran, kategori FROM jenis_pelanggaran WHERE id = '$pelanggaran_id'");
+    $jp_data = mysqli_fetch_assoc($q_jp);
+    $kategori_pelanggaran = $jp_data['kategori'] ?? 'Ringan';
+    $nama_pelanggaran     = $jp_data['nama_pelanggaran'] ?? 'Pelanggaran';
+
+    // Gabungkan keterangan kronologi dengan catatan pembinaan awal Wali Kelas jika diisi pada Sedang/Berat
+    $keterangan_simpan = $keterangan;
+    if (!empty($tindak_lanjut) && $kategori_pelanggaran != 'Ringan') {
+        $keterangan_simpan .= " | Pembinaan Wali Kelas: " . $tindak_lanjut;
+    }
 
     // Simpan catatan pelanggaran baru ke tabel 'catatan_pelanggaran'
     $query = "INSERT INTO catatan_pelanggaran (siswa_id, pelanggaran_id, guru_id, tanggal, keterangan) 
-              VALUES ('$siswa_id', '$pelanggaran_id', '$guru_id', '$tanggal', '$keterangan')";
+              VALUES ('$siswa_id', '$pelanggaran_id', '$guru_id', '$tanggal', '$keterangan_simpan')";
     
     if (mysqli_query($koneksi, $query)) {
+        $cp_id = mysqli_insert_id($koneksi);
+
+        // Jika Pelanggaran RINGAN, selesaikan otomatis dengan membuat entri di tabel konseling
+        if ($kategori_pelanggaran == 'Ringan') {
+            $masalah_val = mysqli_real_escape_string($koneksi, $keterangan);
+            $solusi_val  = mysqli_real_escape_string($koneksi, !empty($tindak_lanjut) ? $tindak_lanjut : "Pembinaan langsung oleh Wali Kelas");
+            $topik_val   = mysqli_real_escape_string($koneksi, $nama_pelanggaran);
+
+            $query_kon = "INSERT INTO konseling 
+                (siswa_id, guru_id, catatan_pelanggaran_id, tanggal, masalah, solusi, status, jenis_konseling, topik_permasalahan, bidang_bimbingan)
+                VALUES 
+                ('$siswa_id', '$guru_id', '$cp_id', '$tanggal', '$masalah_val', '$solusi_val', 'Selesai', 'Tindak Lanjut', '$topik_val', 'Pribadi, Sosial')";
+            mysqli_query($koneksi, $query_kon);
+        }
+
         // Jika berhasil, alihkan pengguna ke halaman status_laporan.php dengan notifikasi sukses
         header("Location: status_laporan.php?pesan=success");
         exit();
@@ -65,8 +93,12 @@ $query_siswa = mysqli_query($koneksi, "
     ORDER BY s.nama_lengkap ASC
 ");
 
-// 7. MENGAMBIL DAFTAR JENIS PELANGGARAN BESERTA POINNYA
-$query_pelanggaran = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran ORDER BY nama_pelanggaran ASC");
+// 7. MENGAMBIL DAFTAR JENIS PELANGGARAN BESERTA KATEGORI DAN POINNYA
+$query_pelanggaran = mysqli_query($koneksi, "SELECT * FROM jenis_pelanggaran ORDER BY FIELD(kategori, 'Ringan', 'Sedang', 'Berat'), nama_pelanggaran ASC");
+$pelanggaran_by_kat = [];
+while($p = mysqli_fetch_assoc($query_pelanggaran)) {
+    $pelanggaran_by_kat[$p['kategori']][] = $p;
+}
 
 // Ambil ID siswa terpilih jika diakses melalui tombol aksi di halaman lain
 $selected_siswa_id = isset($_GET['siswa_id']) ? $_GET['siswa_id'] : '';
@@ -272,17 +304,33 @@ $selected_siswa_id = isset($_GET['siswa_id']) ? $_GET['siswa_id'] : '';
                         </select>
                     </div>
 
-                    <!-- Form Input 2: Pilihan Jenis Pelanggaran & Poin -->
+                    <!-- Form Input 2: Pilihan Jenis Pelanggaran & Kategori -->
                     <div class="form-group">
                         <label><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Jenis Pelanggaran</label>
-                        <select name="pelanggaran_id" class="form-control" required>
+                        <select name="pelanggaran_id" id="pelanggaran_select" class="form-control" required onchange="showKategoriBadge(this)">
                             <option value="">-- Pilih Jenis Pelanggaran --</option>
-                            <?php while($p = mysqli_fetch_assoc($query_pelanggaran)): ?>
-                                <option value="<?php echo $p['id']; ?>">
-                                    <?php echo htmlspecialchars($p['nama_pelanggaran']); ?>
-                                </option>
-                            <?php endwhile; ?>
+                            <?php 
+                            $kat_labels = [
+                                'Ringan' => '🟢 Pelanggaran Ringan',
+                                'Sedang' => '🟡 Pelanggaran Sedang',
+                                'Berat'  => '🔴 Pelanggaran Berat'
+                            ];
+                            foreach (['Ringan', 'Sedang', 'Berat'] as $kat):
+                                if (!empty($pelanggaran_by_kat[$kat])):
+                            ?>
+                                <optgroup label="<?php echo $kat_labels[$kat]; ?>">
+                                    <?php foreach ($pelanggaran_by_kat[$kat] as $p): ?>
+                                        <option value="<?php echo $p['id']; ?>" data-kategori="<?php echo $p['kategori']; ?>">
+                                            [<?php echo $p['kategori']; ?>] <?php echo htmlspecialchars($p['nama_pelanggaran']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </optgroup>
+                            <?php 
+                                endif;
+                            endforeach; 
+                            ?>
                         </select>
+                        <div id="badge_preview_container" style="margin-top: 10px; display: none;"></div>
                     </div>
 
                     <!-- Form Input 3: Tanggal Kejadian -->
@@ -294,7 +342,17 @@ $selected_siswa_id = isset($_GET['siswa_id']) ? $_GET['siswa_id'] : '';
                     <!-- Form Input 4: Keterangan Kronologi Kejadian -->
                     <div class="form-group">
                         <label><i class="fas fa-align-left" style="color: #f59e0b;"></i> Keterangan Kejadian</label>
-                        <textarea name="keterangan" class="form-control" rows="5" placeholder="Jelaskan detail kejadian secara terperinci..." required></textarea>
+                        <textarea name="keterangan" class="form-control" rows="4" placeholder="Jelaskan detail kronologi kejadian secara terperinci..." required></textarea>
+                    </div>
+
+                    <!-- Form Input 5: Tindak Lanjut / Pembinaan Langsung Wali Kelas -->
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                            <span><i class="fas fa-user-check" style="color: #8b5cf6;"></i> Tindak Lanjut / Pembinaan Langsung Wali Kelas</span>
+                            <span id="tindak_lanjut_status_badge" style="font-size: 0.72rem; padding: 3px 10px; border-radius: 6px; font-weight: 700; background: #f1f5f9; color: #64748b; text-transform: uppercase;">(PILIH JENIS PELANGGARAN TERLEBIH DAHULU)</span>
+                        </label>
+                        <textarea name="tindak_lanjut" id="tindak_lanjut_input" class="form-control" rows="3" placeholder="Pilih jenis pelanggaran di atas terlebih dahulu..." disabled></textarea>
+                        <div id="tindak_lanjut_info" style="font-size: 0.825rem; margin-top: 8px; display: none; line-height: 1.4; padding: 8px 12px; border-radius: 6px;"></div>
                     </div>
 
                     <!-- Tombol Aksi Submit & Batal -->
@@ -347,6 +405,80 @@ $selected_siswa_id = isset($_GET['siswa_id']) ? $_GET['siswa_id'] : '';
             });
         }
     });
+
+    function showKategoriBadge(select) {
+        const container = document.getElementById('badge_preview_container');
+        const input = document.getElementById('tindak_lanjut_input');
+        const badge = document.getElementById('tindak_lanjut_status_badge');
+        const info = document.getElementById('tindak_lanjut_info');
+
+        if (!container) return;
+        const selectedOpt = select.options[select.selectedIndex];
+        const kat = selectedOpt ? selectedOpt.getAttribute('data-kategori') : '';
+
+        if (!kat) {
+            container.style.display = 'none';
+            container.innerHTML = '';
+            if (input) {
+                input.disabled = true;
+                input.required = false;
+                input.value = '';
+                input.placeholder = 'Pilih jenis pelanggaran di atas terlebih dahulu...';
+            }
+            if (badge) {
+                badge.style.background = '#f1f5f9';
+                badge.style.color = '#64748b';
+                badge.innerText = '(PILIH JENIS PELANGGARAN TERLEBIH DAHULU)';
+            }
+            if (info) {
+                info.style.display = 'none';
+            }
+            return;
+        }
+
+        let bg = '#eff6ff', color = '#2563eb', border = '#bfdbfe', icon = 'fa-info-circle', label = 'Pelanggaran Ringan';
+        if (kat === 'Ringan') {
+            bg = '#f0fdf4'; color = '#16a34a'; border = '#bbf7d0'; icon = 'fa-info-circle'; label = 'Pelanggaran Ringan';
+        } else if (kat === 'Sedang') {
+            bg = '#fffbeb'; color = '#d97706'; border = '#fde68a'; icon = 'fa-exclamation-circle'; label = 'Pelanggaran Sedang';
+        } else if (kat === 'Berat') {
+            bg = '#fef2f2'; color = '#dc2626'; border = '#fecaca'; icon = 'fa-exclamation-triangle'; label = 'Pelanggaran Berat';
+        }
+
+        container.style.display = 'block';
+        container.innerHTML = `
+            <div style="background: ${bg}; color: ${color}; border: 1px solid ${border}; padding: 8px 14px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fas ${icon}"></i> Tingkat Keparahan: <strong>${label}</strong>
+            </div>
+        `;
+
+        if (input && badge && info) {
+            input.disabled = false;
+            if (kat === 'Ringan') {
+                input.required = true;
+                input.placeholder = 'Tuliskan tindakan pembinaan/teguran langsung yang telah dilakukan Wali Kelas kepada siswa...';
+                badge.style.background = '#dcfce7';
+                badge.style.color = '#15803d';
+                badge.innerText = '(WAJIB DIISI - SELESAI OTOMATIS)';
+                info.style.display = 'block';
+                info.style.background = '#f0fdf4';
+                info.style.color = '#15803d';
+                info.style.border = '1px solid #bbf7d0';
+                info.innerHTML = '<i class="fas fa-check-circle"></i> Untuk <strong>Pelanggaran Ringan</strong>, setelah Wali Kelas menginput pembinaan, laporan akan <strong>diselesaikan secara otomatis</strong> di sistem.';
+            } else {
+                input.required = false;
+                input.placeholder = 'Tuliskan pembinaan awal dari Wali Kelas (jika ada)...';
+                badge.style.background = '#e0f2fe';
+                badge.style.color = '#0369a1';
+                badge.innerText = '(OPSIONAL)';
+                info.style.display = 'block';
+                info.style.background = '#fffbeb';
+                info.style.color = '#b45309';
+                info.style.border = '1px solid #fde68a';
+                info.innerHTML = '<i class="fas fa-info-circle"></i> Untuk Pelanggaran <strong>' + kat + '</strong>, laporan akan diteruskan ke Guru BK untuk ditindaklanjuti lebih lanjut (Layanan Konseling).';
+            }
+        }
+    }
     </script>
 </body>
 </html>

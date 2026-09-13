@@ -364,9 +364,22 @@ $query_laporan = mysqli_query($koneksi, "
                             </td>
                             <td style="vertical-align: middle; min-width: 250px;">
                                 <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
-                                    <span style="font-size: 0.9rem; color: #334155; font-weight: 400; line-height: 1.4;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></span>
+                                    <?php 
+                                    $kat = $row['kategori'] ?? 'Ringan';
+                                    $kat_bg = '#f0fdf4'; $kat_color = '#16a34a'; $kat_border = '#bbf7d0'; $kat_icon = 'fa-info-circle';
+                                    if ($kat == 'Sedang') {
+                                        $kat_bg = '#fffbeb'; $kat_color = '#d97706'; $kat_border = '#fde68a'; $kat_icon = 'fa-exclamation-circle';
+                                    } elseif ($kat == 'Berat') {
+                                        $kat_bg = '#fef2f2'; $kat_color = '#dc2626'; $kat_border = '#fecaca'; $kat_icon = 'fa-exclamation-triangle';
+                                    }
+                                    ?>
                                     <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-
+                                        <span class="badge" style="font-size: 0.72rem; padding: 3px 8px; font-weight: 700; background: <?php echo $kat_bg; ?>; color: <?php echo $kat_color; ?>; border-radius: 4px; border: 1px solid <?php echo $kat_border; ?>;">
+                                            <i class="fas <?php echo $kat_icon; ?>"></i> <?php echo htmlspecialchars($kat); ?>
+                                        </span>
+                                        <span style="font-size: 0.9rem; color: #334155; font-weight: 500; line-height: 1.4;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></span>
+                                    </div>
+                                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                                         <?php if ($row['jumlah_laporan'] >= 3): ?>
                                             <span class="badge" style="font-size: 0.72rem; padding: 4px 8px; font-weight: 700; background: #fee2e2; color: #dc2626; border-radius: 4px; border: 1px solid #fca5a5;"><i class="fas fa-exclamation-triangle"></i> Wajib Panggil Ortu (<?php echo $row['jumlah_laporan']; ?>x Laporan)</span>
                                         <?php elseif ($row['jumlah_laporan'] == 2): ?>

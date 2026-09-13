@@ -432,7 +432,23 @@ function tgl_indo_singkat($tanggal) {
                                 <div style="color: #0f172a; font-size: 0.875rem; font-weight: 500;"><?php echo htmlspecialchars($row['nama_siswa']); ?></div>
                                 <div style="font-size: 0.8rem; color: #64748b; font-weight: 400; margin-top: 3px;">NISN: <?php echo htmlspecialchars($row['nisn']); ?></div>
                             </td>
-                            <td style="padding: 14px 18px; color: #334155; font-size: 0.875rem;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></td>
+                             <td style="padding: 14px 18px; color: #334155; font-size: 0.875rem;">
+                                 <?php 
+                                 $kat = $row['kategori'] ?? 'Ringan';
+                                 $kat_bg = '#f0fdf4'; $kat_color = '#16a34a'; $kat_border = '#bbf7d0';
+                                 if ($kat == 'Sedang') {
+                                     $kat_bg = '#fffbeb'; $kat_color = '#d97706'; $kat_border = '#fde68a';
+                                 } elseif ($kat == 'Berat') {
+                                     $kat_bg = '#fef2f2'; $kat_color = '#dc2626'; $kat_border = '#fecaca';
+                                 }
+                                 ?>
+                                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                     <span style="background: <?php echo $kat_bg; ?>; color: <?php echo $kat_color; ?>; border: 1px solid <?php echo $kat_border; ?>; font-size: 0.72rem; padding: 2px 8px; border-radius: 4px; font-weight: 700;">
+                                         <?php echo htmlspecialchars($kat); ?>
+                                     </span>
+                                     <span><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></span>
+                                 </div>
+                             </td>
                             <td style="padding: 14px 18px; text-align: center;">
                                 <?php if ($st == 'Diproses' || $st == 'Proses'): ?>
                                     <span class="status-badge-diproses"><i class="fas fa-spinner fa-spin"></i> Diproses</span>

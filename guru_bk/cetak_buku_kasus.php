@@ -40,7 +40,7 @@ if (!empty($filter_kelas)) {
 $query_kasus = mysqli_query($koneksi, "
     SELECT cp.id, cp.tanggal, cp.keterangan,
            s.nama_lengkap as nama_siswa, k.nama_kelas,
-           jp.nama_pelanggaran,
+           jp.nama_pelanggaran, jp.kategori,
            kon.solusi as tindak_lanjut,
            kon.masalah as catatan_konseling
     FROM catatan_pelanggaran cp

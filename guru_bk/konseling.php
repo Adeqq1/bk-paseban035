@@ -78,7 +78,7 @@ $query_mandiri = mysqli_query($koneksi, "
 
 // Query 2: Tindak Lanjut Pelanggaran
 $query_pelanggaran = mysqli_query($koneksi, "
-    SELECT kon.*, s.nama_lengkap as nama_siswa, s.nisn, k.nama_kelas, jp.nama_pelanggaran, g.jabatan as jabatan_guru
+    SELECT kon.*, s.nama_lengkap as nama_siswa, s.nisn, k.nama_kelas, jp.nama_pelanggaran, jp.kategori, g.jabatan as jabatan_guru
     FROM konseling kon
     JOIN siswa s ON kon.siswa_id = s.id
     LEFT JOIN kelas k ON s.kelas_id = k.id
@@ -374,7 +374,23 @@ $query_pelanggaran = mysqli_query($koneksi, "
                                 <small style="color: #64748b; font-size: 0.8rem; font-weight: 400;">NISN: <?php echo htmlspecialchars($row['nisn']); ?></small>
                             </td>
                             <td><span class="badge badge-primary"><?php echo htmlspecialchars($row['nama_kelas'] ?? '-'); ?></span></td>
-                            <td><span class="badge badge-warning" style="background: #fef3c7; color: #d97706; font-weight: 500;">Konferensi Kasus</span></td>
+                            <td>
+                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                    <span class="badge badge-warning" style="background: #fef3c7; color: #d97706; font-weight: 600; font-size: 0.75rem;">Konferensi Kasus</span>
+                                    <?php 
+                                    $kat = $row['kategori'] ?? 'Ringan';
+                                    $kat_bg = '#dcfce7'; $kat_color = '#15803d'; $kat_border = '#bbf7d0';
+                                    if ($kat == 'Sedang') {
+                                        $kat_bg = '#fffbeb'; $kat_color = '#b45309'; $kat_border = '#fde68a';
+                                    } elseif ($kat == 'Berat') {
+                                        $kat_bg = '#fee2e2'; $kat_color = '#dc2626'; $kat_border = '#fca5a5';
+                                    }
+                                    ?>
+                                    <span class="badge" style="background: <?php echo $kat_bg; ?>; color: <?php echo $kat_color; ?>; border: 1px solid <?php echo $kat_border; ?>; font-size: 0.7rem; padding: 2px 8px; font-weight: 700; text-transform: uppercase;" title="Kategori Pelanggaran <?php echo htmlspecialchars($kat); ?>">
+                                        <?php echo htmlspecialchars($kat); ?>
+                                    </span>
+                                </div>
+                            </td>
                             <td style="max-width: 200px;">
                                 <?php $topik_tindak = !empty($row['topik_permasalahan']) ? $row['topik_permasalahan'] : ($row['nama_pelanggaran'] ?? '-'); ?>
                                 <div style="display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; box-orient: vertical; overflow: hidden; text-overflow: ellipsis; font-size: 0.85rem; color: #475569; line-height: 1.4;">
@@ -393,28 +409,12 @@ $query_pelanggaran = mysqli_query($koneksi, "
                             </td>
                             <td style="text-align: center; white-space: nowrap;">
                                 <div style="display: flex; gap: 6px; justify-content: center;">
-                                    <?php 
-                                    // Pengecekan: Jika jabatan yang menangani BUKAN Guru BK
-                                    // (artinya ini adalah pelanggaran kecil/ringan yang diselesaikan otomatis oleh sistem/Wali Kelas)
-                                    if(isset($row['jabatan_guru']) && $row['jabatan_guru'] != 'Guru BK'): 
-                                    ?>
-                                        <!-- Tombol cetak dimatikan (berwarna abu-abu) karena tidak perlu cetak RPL untuk penyelesaian otomatis -->
-                                        <button class="btn btn-secondary btn-sm btn-icon" style="background: #e2e8f0; color: #94a3b8; border: none; cursor: not-allowed;" title="Selesai otomatis (Tidak Perlu RPL)" disabled>
-                                            <i class="fas fa-print"></i>
-                                        </button>
-                                    <?php 
-                                    // Sebaliknya: Jika yang menangani ADALAH Guru BK
-                                    // (artinya ini pelanggaran sedang/berat yang ditangani langsung oleh Anda)
-                                    else: 
-                                    ?>
-                                        <!-- Tombol cetak diaktifkan (berwarna biru) agar Guru BK bisa mencetak RPL / Berita Acara -->
-                                        <a href="cetak_konseling.php?id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-primary btn-sm btn-icon" title="Cetak Berita Acara">
-                                            <i class="fas fa-print">
-                                            </i>
-                                        </a>
-                                    <?php endif; ?>
+                                    <!-- Tombol cetak RPL Berita Acara -->
+                                    <a href="cetak_konseling.php?id=<?php echo $row['id']; ?>" target="_blank" class="btn btn-primary btn-sm btn-icon" title="Cetak RPL Berita Acara (<?php echo htmlspecialchars($kat); ?>)">
+                                        <i class="fas fa-print"></i>
+                                    </a>
                                     
-                                    <!-- Tombol hapus tetap dibiarkan aktif agar Guru BK bisa membatalkan/menghapus riwayat apa pun (termasuk yang poin kecil otomatis) -->
+                                    <!-- Tombol hapus riwayat -->
                                     <a href="?hapus=<?php echo $row['id']; ?>" class="btn btn-danger btn-sm btn-icon" onclick="return confirm('Hapus data tindak lanjut pelanggaran ini secara permanen?')" title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </a>

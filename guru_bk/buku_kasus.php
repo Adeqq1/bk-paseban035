@@ -40,7 +40,7 @@ if (!empty($filter_kelas)) {
 $query_kasus = mysqli_query($koneksi, "
     SELECT cp.id, cp.tanggal, cp.keterangan,
            s.nama_lengkap as nama_siswa, k.nama_kelas,
-           jp.nama_pelanggaran,
+           jp.nama_pelanggaran, jp.kategori,
            kon.solusi as tindak_lanjut,
            kon.masalah as catatan_konseling
     FROM catatan_pelanggaran cp
@@ -373,7 +373,21 @@ $tahun_pelajaran = ($semester == '1') ? "$tahun/" . ($tahun + 1) : ($tahun - 1) 
                                 <?php endif; ?>
                             </td>
                             <td style="vertical-align: middle;">
-                                <div style="color: #dc2626; font-size: 0.85rem; font-weight: 500;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></div>
+                                <?php 
+                                $kat = $row['kategori'] ?? 'Ringan';
+                                $kat_bg = '#f0fdf4'; $kat_color = '#16a34a'; $kat_border = '#bbf7d0';
+                                if ($kat == 'Sedang') {
+                                    $kat_bg = '#fffbeb'; $kat_color = '#d97706'; $kat_border = '#fde68a';
+                                } elseif ($kat == 'Berat') {
+                                    $kat_bg = '#fef2f2'; $kat_color = '#dc2626'; $kat_border = '#fecaca';
+                                }
+                                ?>
+                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                    <span class="badge" style="background: <?php echo $kat_bg; ?>; color: <?php echo $kat_color; ?>; border: 1px solid <?php echo $kat_border; ?>; font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; font-weight: 700;">
+                                        <?php echo htmlspecialchars($kat); ?>
+                                    </span>
+                                    <div style="color: #334155; font-size: 0.85rem; font-weight: 500;"><?php echo htmlspecialchars($row['nama_pelanggaran']); ?></div>
+                                </div>
                             </td>
                             <td style="vertical-align: middle;" class="catatan-cell">
                                 <?php echo $tindak_lanjut; ?>
